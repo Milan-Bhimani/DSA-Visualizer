@@ -1,41 +1,207 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Algorithm Visualizer</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        :root {
+            --primary-color: black;
+            --primary-dark: black;
+            --primary-light: black;
+            --secondary-color: #4caf50;
+            --text-primary: #212121;
+            --text-secondary: #757575;
+            --background-light: #fafafa;
+            --shadow-sm: 0 2px 4px rgba(0,0,0,0.1);
+            --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
+            --border-radius: 8px;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            line-height: 1.6;
+            color: var(--text-primary);
+            background: #f8f9fa;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .header {
+            margin-left: 145px;
+            text-align: center;
+            margin-bottom: 20px; /* Reduced from 30px for compactness */
+            padding: 10px 20px; /* Reduced from 20px for compactness */
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-sm);
+            position: relative;
+            border-top: none;
+            min-height: 80px;
+            max-width: 1200px;
+        }
+
+        .header h1 {
+            color: var(--primary-color); /* Changed to match reference primary color */
+            margin: 0 0 5px 0; /* Reduced from 10px for compactness */
+            font-size: 2em;
+        }
+
+        .header p {
+            color: var(--text-secondary);
+            margin: 0;
+            font-size: 1em; /* Reduced from 1.1em for compactness */
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .section {
+            margin-bottom: 20px; /* Reduced from 40px for compactness */
+        }
+
+        .section h2 {
+            color: var(--primary-dark);
+            margin-bottom: 10px; /* Reduced from 20px for compactness */
+            font-size: 1.5em; /* Reduced from 1.8em for better balance */
+            padding-bottom: 5px; /* Reduced from 10px for compactness */
+            border-bottom: 2px solid var(--primary-light);
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 15px; /* Reduced from 20px for compactness */
+        }
+
+        .card {
+            display: block;
+            background: white;
+            padding: 15px; /* Reduced from 20px for compactness */
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-sm);
+            text-decoration: none;
+            color: var(--text-primary);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .card h3 {
+            color: var(--primary-color);
+            margin: 0 0 5px 0; /* Reduced from 10px for compactness */
+            font-size: 1.2em; /* Reduced from 1.3em for better balance */
+        }
+
+        .card p {
+            color: var(--text-secondary);
+            margin: 0;
+            font-size: 0.9em; /* Reduced from 1em for compactness */
+        }
+
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--background-light);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-dark);
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            }
+
+            .card {
+                padding: 10px; /* Reduced from 15px for compactness */
+            }
+
+            .header h1 {
+                font-size: 1.5em;
+            }
+
+            .section h2 {
+                font-size: 1.3em; /* Reduced from 1.5em for better balance */
+            }
+
+            .card h3 {
+                font-size: 1.1em; /* Reduced from 1.2em for better balance */
+            }
+
+            .card p {
+                font-size: 0.8em; /* Reduced from 0.9em for compactness */
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+
+            .grid {
+                grid-template-columns: 1fr;
+            }
+
+            .header {
+                padding: 10px; /* Reduced from 15px for compactness */
+            }
+
+            .section {
+                margin-bottom: 15px; /* Reduced from 20px for compactness */
+            }
+        }
+    </style>
 </head>
 <body>
     <div class="header">
         <h1>Algorithm Visualizer</h1>
-        <p class="subtitle">Interactive visualization of common algorithms</p>
+        <p>Interactive visualization of common algorithms</p>
     </div>
 
-    <div class="categories-container">
+    <div class="container">
         <!-- Sorting Section -->
-        <div class="category">
+        <div class="section">
             <h2>Sorting Algorithms</h2>
-            <div class="algorithm-grid">
-                <a href="/sorting/bubble" class="algorithm-card">
+            <div class="grid">
+                <a href="/sorting/bubble" class="card">
                     <h3>Bubble Sort</h3>
                     <p>Simple comparison-based sorting</p>
                 </a>
-                <a href="/sorting/insertion" class="algorithm-card">
+                <a href="/sorting/insertion" class="card">
                     <h3>Insertion Sort</h3>
                     <p>Build sorted array one item at a time</p>
                 </a>
-                <a href="/sorting/selection" class="algorithm-card">
+                <a href="/sorting/selection" class="card">
                     <h3>Selection Sort</h3>
                     <p>Find minimum element and place in sorted portion</p>
                 </a>
-                <a href="/sorting/merge" class="algorithm-card">
+                <a href="/sorting/merge" class="card">
                     <h3>Merge Sort</h3>
                     <p>Divide and conquer sorting algorithm</p>
                 </a>
-                <a href="/sorting/quick" class="algorithm-card">
+                <a href="/sorting/quick" class="card">
                     <h3>Quick Sort</h3>
                     <p>Partition-based sorting algorithm</p>
                 </a>
-                <a href="/sorting/heap" class="algorithm-card">
+                <a href="/sorting/heap" class="card">
                     <h3>Heap Sort</h3>
                     <p>Binary heap based sorting</p>
                 </a>
@@ -43,26 +209,26 @@
         </div>
 
         <!-- Searching Section -->
-        <div class="category">
+        <div class="section">
             <h2>Searching Algorithms</h2>
-            <div class="algorithm-grid">
-                <a href="/searching/linear" class="algorithm-card">
+            <div class="grid">
+                <a href="/searching/linear" class="card">
                     <h3>Linear Search</h3>
                     <p>Sequential search through array</p>
                 </a>
-                <a href="/searching/binary" class="algorithm-card">
+                <a href="/searching/binary" class="card">
                     <h3>Binary Search</h3>
                     <p>Search in sorted array by dividing search interval</p>
                 </a>
-                <a href="/searching/jump" class="algorithm-card">
+                <a href="/searching/jump" class="card">
                     <h3>Jump Search</h3>
                     <p>Skip fixed steps in sorted array</p>
                 </a>
-                <a href="/searching/exponential" class="algorithm-card">
+                <a href="/searching/exponential" class="card">
                     <h3>Exponential Search</h3>
                     <p>Find range then binary search</p>
                 </a>
-                <a href="/searching/interpolation" class="algorithm-card">
+                <a href="/searching/interpolation" class="card">
                     <h3>Interpolation Search</h3>
                     <p>Improved binary search for uniform distribution</p>
                 </a>
@@ -70,96 +236,60 @@
         </div>
 
         <!-- Dynamic Programming Section -->
-        <div class="category">
+        <div class="section">
             <h2>Dynamic Programming</h2>
-            <div class="algorithm-grid">
-                <a href="/dp/fibonacci" class="algorithm-card">
+            <div class="grid">
+                <a href="/dp/fibonacci" class="card">
                     <h3>Fibonacci</h3>
                     <p>Calculate nth Fibonacci number</p>
                 </a>
-                <a href="/dp/lcs" class="algorithm-card">
+                <a href="/dp/lcs" class="card">
                     <h3>Longest Common Subsequence</h3>
                     <p>Find longest common subsequence</p>
                 </a>
-                <a href="/dp/knapsack" class="algorithm-card">
+                <a href="/dp/knapsack" class="card">
                     <h3>0/1 Knapsack</h3>
                     <p>Maximize value with weight constraint</p>
                 </a>
-                <a href="/dp/edit_distance" class="algorithm-card">
+                <a href="/dp/edit_distance" class="card">
                     <h3>Edit Distance</h3>
                     <p>Minimum operations to transform string</p>
                 </a>
-                <a href="/dp/matrix_chain" class="algorithm-card">
+                <a href="/dp/matrix_chain" class="card">
                     <h3>Matrix Chain Multiplication</h3>
                     <p>Optimize matrix multiplication order</p>
                 </a>
-                <a href="/dp/lis" class="algorithm-card">
+                <a href="/dp/lis" class="card">
                     <h3>Longest Increasing Subsequence</h3>
                     <p>Find longest increasing subsequence</p>
                 </a>
             </div>
         </div>
-
-        <!-- Graph Algorithms Section -->
-        <div class="category">
-            <h2>Graph Algorithms</h2>
-            <div class="algorithm-grid">
-                <a href="/graph/dfs" class="algorithm-card">
-                    <h3>Depth-First Search</h3>
-                    <p>Explore graph branches before backtracking</p>
-                </a>
-                <a href="/graph/bfs" class="algorithm-card">
-                    <h3>Breadth-First Search</h3>
-                    <p>Explore graph level by level</p>
-                </a>
-                <a href="/graph/dijkstra" class="algorithm-card">
-                    <h3>Dijkstra's Algorithm</h3>
-                    <p>Find shortest paths in weighted graph</p>
-                </a>
-                <a href="/graph/prim" class="algorithm-card">
-                    <h3>Prim's Algorithm</h3>
-                    <p>Find minimum spanning tree</p>
-                </a>
-                <a href="/graph/kruskal" class="algorithm-card">
-                    <h3>Kruskal's Algorithm</h3>
-                    <p>Find minimum spanning tree</p>
-                </a>
-                <a href="/graph/bellman-ford" class="algorithm-card">
-                    <h3>Bellman-Ford Algorithm</h3>
-                    <p>Find shortest paths with negative edges</p>
-                </a>
-                <a href="/graph/floyd-warshall" class="algorithm-card">
-                    <h3>Floyd-Warshall Algorithm</h3>
-                    <p>Find all pairs shortest paths</p>
-                </a>
-            </div>
-        </div>
-
         <!-- Greedy Algorithms Section -->
-        <div class="category">
+        <div class="section">
             <h2>Greedy Algorithms</h2>
-            <div class="algorithm-grid">
-                <a href="/greedy/activity" class="algorithm-card">
+            <div class="grid">
+                <a href="/greedy/activity" class="card">
                     <h3>Activity Selection</h3>
                     <p>Select maximum non-overlapping activities</p>
                 </a>
-                <a href="/greedy/fractional-knapsack" class="algorithm-card">
+                <a href="/greedy/fractional-knapsack" class="card">
                     <h3>Fractional Knapsack</h3>
                     <p>Maximize value with fractional items</p>
                 </a>
-                <a href="/greedy/huffman" class="algorithm-card">
+                <a href="/greedy/huffman" class="card">
                     <h3>Huffman Coding</h3>
                     <p>Optimal prefix codes for compression</p>
                 </a>
-                <a href="/greedy/coin-change" class="algorithm-card">
+                <a href="/greedy/coin-change" class="card">
                     <h3>Coin Change</h3>
                     <p>Minimum coins for given amount</p>
                 </a>
-                <a href="/greedy/job-scheduling" class="algorithm-card">
+                <a href="/greedy/job-scheduling" class="card">
                     <h3>Job Scheduling</h3>
                     <p>Schedule jobs to maximize profit</p>
                 </a>
-                <a href="/greedy/platforms" class="algorithm-card">
+                <a href="/greedy/platforms" class="card">
                     <h3>Minimum Platforms</h3>
                     <p>Minimum platforms for railway station</p>
                 </a>
@@ -167,26 +297,26 @@
         </div>
 
         <!-- Backtracking Section -->
-        <div class="category">
+        <div class="section">
             <h2>Backtracking Algorithms</h2>
-            <div class="algorithm-grid">
-                <a href="/backtracking/n-queens" class="algorithm-card">
+            <div class="grid">
+                <a href="/backtracking/n-queens" class="card">
                     <h3>N-Queens Problem</h3>
                     <p>Place N queens on NxN chessboard</p>
                 </a>
-                <a href="/backtracking/sudoku" class="algorithm-card">
+                <a href="/backtracking/sudoku" class="card">
                     <h3>Sudoku Solver</h3>
                     <p>Solve 9x9 Sudoku puzzle</p>
                 </a>
-                <a href="/backtracking/subset-sum" class="algorithm-card">
+                <a href="/backtracking/subset-sum" class="card">
                     <h3>Subset Sum</h3>
                     <p>Find subset with given sum</p>
                 </a>
-                <a href="/backtracking/permutations" class="algorithm-card">
+                <a href="/backtracking/permutations" class="card">
                     <h3>Permutations</h3>
                     <p>Generate all permutations</p>
                 </a>
-                <a href="/backtracking/graph-coloring" class="algorithm-card">
+                <a href="/backtracking/graph-coloring" class="card">
                     <h3>Graph Coloring</h3>
                     <p>Color vertices with minimum colors</p>
                 </a>
@@ -194,30 +324,30 @@
         </div>
 
         <!-- Divide and Conquer Section -->
-        <div class="category">
+        <div class="section">
             <h2>Divide and Conquer Algorithms</h2>
-            <div class="algorithm-grid">
-                <a href="/divide-conquer/binary-search" class="algorithm-card">
+            <div class="grid">
+                <a href="/divide-conquer/binary-search" class="card">
                     <h3>Binary Search</h3>
                     <p>Search in sorted array by dividing</p>
                 </a>
-                <a href="/divide-conquer/merge-sort" class="algorithm-card">
+                <a href="/divide-conquer/merge-sort" class="card">
                     <h3>Merge Sort</h3>
                     <p>Sort by dividing and merging</p>
                 </a>
-                <a href="/divide-conquer/quick-sort" class="algorithm-card">
+                <a href="/divide-conquer/quick-sort" class="card">
                     <h3>Quick Sort</h3>
                     <p>Sort by partitioning around pivot</p>
                 </a>
-                <a href="/divide-conquer/closest-pair" class="algorithm-card">
+                <a href="/divide-conquer/closest-pair" class="card">
                     <h3>Closest Pair of Points</h3>
                     <p>Find closest points in 2D space</p>
                 </a>
-                <a href="/divide-conquer/karatsuba" class="algorithm-card">
+                <a href="/divide-conquer/karatsuba" class="card">
                     <h3>Karatsuba Multiplication</h3>
                     <p>Fast multiplication of large numbers</p>
                 </a>
-                <a href="/divide-conquer/strassen" class="algorithm-card">
+                <a href="/divide-conquer/strassen" class="card">
                     <h3>Strassen's Matrix Multiplication</h3>
                     <p>Efficient matrix multiplication</p>
                 </a>
@@ -225,6 +355,6 @@
         </div>
     </div>
 
-    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
-</body>
-</html>
+    <div class="controls">
+        <div class="input-group">
+            <div class="input-row">

@@ -1,842 +1,687 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>{{ algorithm_name }} - Algorithm Visualizer</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Graph Algorithm Visualizer</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <style>
         :root {
-            --primary-color: #4299e1;
-            --primary-dark: #2b6cb0;
-            --success-color: #48bb78;
-            --neutral-color: #a0aec0;
-            --background-color: #f7fafc;
-            --border-color: #e2e8f0;
-            --text-color: #2d3748;
-            --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+            --primary-color: black;
+            --primary-dark: black;
+            --primary-light: black;
+            --secondary-color: #4caf50;
+            --text-primary: #212121;
+            --text-secondary: #757575;
+            --background-light: #fafafa;
+            --shadow-sm: 0 2px 4px rgba(0,0,0,0.1);
             --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
-            --shadow-lg: 0 10px 15px rgba(0,0,0,0.1);
-            --radius-sm: 4px;
-            --radius-md: 8px;
-            --radius-lg: 12px;
+            --border-radius: 8px;
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            line-height: 1.5;
-            color: var(--text-color);
-            background-color: var(--background-color);
-            margin: 0;
-            padding: 20px;
-        }
-
-        .header {
-            background: white;
-            padding: 20px;
-            border-radius: var(--radius-md);
-            box-shadow: var(--shadow-md);
-            margin-bottom: 20px;
-        }
-
-        .header h1 {
-            margin: 0;
-            color: var(--primary-dark);
-            font-size: 2em;
-        }
-
-        .back-button {
-            color: var(--primary-color);
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            margin-bottom: 10px;
-            font-weight: 500;
-            transition: color 0.2s;
-        }
-
-        .back-button:hover {
-            color: var(--primary-dark);
-        }
-
-        .subtitle {
-            color: var(--neutral-color);
-            margin: 10px 0 0;
-            font-size: 1.1em;
-        }
-
-        .step-container {
-            background: white;
-            border: 1px solid var(--border-color);
-            margin: 0 0 15px 0;
-            padding: 15px;
-            border-radius: var(--radius-md);
-            box-shadow: var(--shadow-sm);
-            transition: transform 0.2s, box-shadow 0.2s;
-            display: none;
-            overflow: auto;
-        }
-
-        .step-container.active {
-            display: block;
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        .step-header {
-            font-weight: 600;
-            margin-bottom: 15px;
-            color: var(--text-color);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding-bottom: 10px;
-            border-bottom: 2px solid var(--border-color);
-        }
-
-        .step-explanation {
-            margin: 15px 0;
-            padding: 12px;
-            background-color: #ebf8ff;
-            border-left: 4px solid var(--primary-color);
-            border-radius: var(--radius-sm);
-            font-size: 0.95em;
-            color: var(--primary-dark);
-            line-height: 1.6;
-        }
-
-        .steps-grid {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            padding: 10px;
-            position: relative;
-        }
-
-        .step-navigation {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 15px;
-            margin: 20px 0;
-            padding: 15px;
-            background: white;
-            border-radius: var(--radius-md);
-            box-shadow: var(--shadow-sm);
-        }
-
-        .step-navigation button {
-            padding: 8px 16px;
-            background: var(--primary-color);
-            color: white;
-            border: none;
-            border-radius: var(--radius-sm);
-            cursor: pointer;
-            font-weight: 500;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .step-navigation button:disabled {
-            background: var(--neutral-color);
-            cursor: not-allowed;
-            opacity: 0.7;
-        }
-
-        .step-navigation button:not(:disabled):hover {
-            background: var(--primary-dark);
-            transform: translateY(-1px);
-            box-shadow: var(--shadow-sm);
-        }
-
-        .step-navigation .step-counter {
-            font-weight: 500;
-            color: var(--text-color);
-            min-width: 100px;
-            text-align: center;
-        }
-
-        .visualization-area {
-            height: auto;
-            min-height: 400px;
-            max-height: 800px;
-            overflow: auto;
-            padding: 20px;
-            background: white;
-            border-radius: var(--radius-lg);
-            box-shadow: var(--shadow-md);
-            margin: 20px 0;
-        }
-
-        /* Special handling for Huffman visualization */
-        .visualization-area.huffman {
-            background: var(--background-color);
-            box-shadow: none;
-            border-radius: 0;
-            padding: 0;
-        }
-
-        .step-container {
-            background: white;
-            border: 1px solid var(--border-color);
-            margin: 0 0 15px 0;
-            padding: 15px;
-            border-radius: var(--radius-md);
-            box-shadow: var(--shadow-sm);
-            display: none;
-            overflow: auto;
-        }
-
-        /* Special handling for Huffman step container */
-        .huffman .step-container {
-            background: none;
-            border: none;
-            box-shadow: none;
-            padding: 0;
-        }
-
-        .huffman .step-container .step-header,
-        .huffman .step-container .step-explanation {
-            background: white;
-            border-radius: var(--radius-md);
-            padding: 15px;
-            margin: 15px 0;
-            box-shadow: var(--shadow-sm);
-        }
-
-        /* Activity Selection Styles */
-        .timeline {
-            height: 100px;
-            padding: 8px;
-            margin: 10px 0;
-        }
-
-        .activity {
-            position: absolute;
-            height: 35px;
-            background: var(--neutral-color);
-            border-radius: var(--radius-sm);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 0.9em;
-            transition: all 0.3s ease;
-            box-shadow: var(--shadow-sm);
-            cursor: pointer;
-        }
-
-        .activity:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-md);
-        }
-
-        .activity.selected {
-            background: var(--success-color);
-        }
-
-        .activity.current {
-            border: 2px solid var(--primary-dark);
-            box-shadow: 0 0 0 2px rgba(43, 108, 176, 0.3);
-        }
-
-        /* Knapsack Styles */
-        .items-container {
-            height: 150px;
-            padding: 8px;
-            margin: 10px 0;
-        }
-        
-        .item {
-            flex: 1;
-            background: var(--neutral-color);
-            min-height: 50px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 0.9em;
-            border-radius: var(--radius-sm);
-            transition: all 0.3s ease;
-            white-space: pre-wrap;
-            text-align: center;
-            box-shadow: var(--shadow-sm);
-            cursor: pointer;
-        }
-        
-        .item:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-md);
-        }
-        
-        .item.selected {
-            background: var(--success-color);
-        }
-        
-        .item.current {
-            border: 2px solid var(--primary-dark);
-            box-shadow: 0 0 0 2px rgba(43, 108, 176, 0.3);
-        }
-        
-        /* Huffman Coding Styles */
-        .huffman-tree {
-            position: relative;
-            height: 600px;
-            width: 100%;
-            min-width: 900px;
-            background: linear-gradient(to bottom, var(--background-color), white);
-            border-radius: var(--radius-lg);
-            padding: 40px;
-            border: 1px solid var(--border-color);
-            overflow: visible;
-            margin: 10px auto 30px;
-            display: flex;
-            justify-content: center;
-            align-items: flex-start;
-            box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.08);
-        }
-        
-        .huffman-node {
-            position: absolute;
-            width: 100px;
-            height: 100px;
-            background: linear-gradient(135deg, #4299e1, #2b6cb0);
-            border-radius: 50%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 1.2em;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15), 0 3px 6px rgba(0, 0, 0, 0.1);
-            cursor: pointer;
-            z-index: 2;
-            transform: translate(-50%, -50%);
-            border: 3px solid rgba(255, 255, 255, 0.25);
-        }
-        
-        .huffman-node:hover {
-            transform: translate(-50%, -50%) scale(1.1);
-            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.2), 0 4px 8px rgba(0, 0, 0, 0.15);
-            border-color: rgba(255, 255, 255, 0.4);
-        }
-        
-        .huffman-node.leaf {
-            background: linear-gradient(135deg, #48bb78, #38a169);
-            width: 110px;
-            height: 110px;
-        }
-        
-        .huffman-node.internal {
-            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
-        }
-        
-        .huffman-node.current {
-            border: 4px solid white;
-            box-shadow: 0 0 0 6px var(--primary-dark), 0 10px 20px rgba(0, 0, 0, 0.25);
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0% { 
-                box-shadow: 0 0 0 6px var(--primary-dark), 0 10px 20px rgba(0, 0, 0, 0.25);
-                transform: translate(-50%, -50%) scale(1);
-            }
-            50% { 
-                box-shadow: 0 0 0 10px rgba(43, 108, 176, 0.4), 0 15px 25px rgba(0, 0, 0, 0.3);
-                transform: translate(-50%, -50%) scale(1.05);
-            }
-            100% { 
-                box-shadow: 0 0 0 6px var(--primary-dark), 0 10px 20px rgba(0, 0, 0, 0.25);
-                transform: translate(-50%, -50%) scale(1);
-            }
-        }
-
-        .huffman-node .char {
-            font-weight: bold;
-            font-size: 1.8em;
-            margin-bottom: 10px;
-            height: 32px;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
-            letter-spacing: 1px;
-        }
-
-        .huffman-node .freq {
-            font-size: 1.1em;
-            opacity: 0.95;
-            background: rgba(255, 255, 255, 0.25);
-            padding: 5px 15px;
-            border-radius: 20px;
-            min-width: 40px;
-            text-align: center;
-            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.2);
-            backdrop-filter: blur(4px);
-        }
-        
-        .huffman-edge {
-            position: absolute;
-            background: linear-gradient(to right, var(--neutral-color) 70%, rgba(160, 174, 192, 0.7));
-            height: 4px;
-            transform-origin: 0 0;
-            z-index: 1;
-            opacity: 0.6;
-            transition: all 0.3s ease;
-            border-radius: 2px;
-        }
-
-        .huffman-edge::before {
-            content: '';
-            position: absolute;
-            left: 0;
-            top: 50%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, 
-                rgba(255, 255, 255, 0.4) 0%, 
-                rgba(255, 255, 255, 0.2) 50%, 
-                rgba(255, 255, 255, 0.1) 100%);
-            transform: translateY(-50%);
-        }
-
-        .huffman-edge::after {
-            content: '';
-            position: absolute;
-            right: -4px;
-            top: -4px;
-            width: 8px;
-            height: 8px;
-            background: var(--neutral-color);
-            border-radius: 50%;
-            box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.4);
-        }
-
-        .huffman-edge:hover {
-            opacity: 0.9;
-            height: 5px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.15);
-        }
-
-        /* Coin Change Styles */
-        .coin-container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 15px;
-            padding: 20px;
-            background: var(--background-color);
-            border-radius: var(--radius-sm);
-            border: 1px solid var(--border-color);
-        }
-        
-        .coin {
-            width: 70px;
-            height: 70px;
-            background: var(--neutral-color);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 1em;
-            font-weight: 500;
-            transition: all 0.3s ease;
-            box-shadow: var(--shadow-sm);
-            cursor: pointer;
-            position: relative;
-        }
-        
-        .coin:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-md);
-        }
-        
-        .coin.selected {
-            background: var(--success-color);
-            transform: scale(1.1);
-            box-shadow: var(--shadow-md);
-        }
-        
-        .coin.current {
-            border: 2px solid var(--primary-dark);
-            box-shadow: 0 0 0 2px rgba(43, 108, 176, 0.3);
-        }
-        
-        .coin-count {
-            position: absolute;
-            top: -8px;
-            right: -8px;
-            background: var(--primary-dark);
-            color: white;
-            border-radius: 50%;
-            width: 24px;
-            height: 24px;
-            font-size: 0.8em;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        /* Job Scheduling Styles */
-        .schedule-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-            gap: 15px;
-            padding: 20px;
-            background: var(--background-color);
-            border-radius: var(--radius-sm);
-            border: 1px solid var(--border-color);
-        }
-        
-        .job {
-            padding: 15px;
-            background: var(--neutral-color);
-            border-radius: var(--radius-sm);
-            color: white;
-            font-size: 0.9em;
-            transition: all 0.3s ease;
-            box-shadow: var(--shadow-sm);
-            cursor: pointer;
-        }
-        
-        .job:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-md);
-        }
-        
-        .job.selected {
-            background: var(--success-color);
-        }
-        
-        .job.current {
-            border: 2px solid var(--primary-dark);
-            box-shadow: 0 0 0 2px rgba(43, 108, 176, 0.3);
-        }
-        
-        /* Platform Styles */
-        .platforms-container {
-            height: 300px;
-            max-height: 400px;
-            padding: 15px;
-        }
-
-        .platform {
-            background: white;
-            border-radius: var(--radius-sm);
-            padding: 15px;
-            box-shadow: var(--shadow-sm);
-            transition: all 0.3s ease;
-            position: relative;
-            min-height: 60px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .platform:hover {
-            transform: translateX(5px);
-            box-shadow: var(--shadow-md);
-        }
-
-        .platform-number {
-            position: absolute;
-            left: -10px;
-            top: 50%;
-            transform: translateY(-50%);
-            background: var(--primary-color);
-            color: white;
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.8em;
-            font-weight: bold;
-        }
-
-        .train {
-            background: var(--neutral-color);
-            border-radius: var(--radius-sm);
-            padding: 10px 15px;
-            color: white;
-            font-size: 0.9em;
-            min-width: 120px;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s ease;
-            box-shadow: var(--shadow-sm);
-            position: relative;
-        }
-
-        .train.arriving {
-            background: var(--success-color);
-        }
-
-        .train.departing {
-            background: var(--primary-color);
-        }
-
-        .train:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-md);
-        }
-
-        .train .time {
-            position: absolute;
-            top: -20px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 0.8em;
-            color: var(--text-color);
-            background: white;
-            padding: 2px 6px;
-            border-radius: var(--radius-sm);
-            box-shadow: var(--shadow-sm);
-        }
-
-        .platform-stats {
-            display: flex;
-            gap: 20px;
-            margin-top: 20px;
-            padding: 15px;
-            background: white;
-            border-radius: var(--radius-sm);
-            box-shadow: var(--shadow-sm);
-        }
-
-        .platform-stat {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        .platform-stat-label {
-            font-size: 0.8em;
-            color: var(--neutral-color);
-            margin-bottom: 5px;
-        }
-
-        .platform-stat-value {
-            font-size: 1.2em;
-            font-weight: bold;
-            color: var(--primary-color);
-        }
-        
-        /* Control Panel Styles */
-        .control-panel {
-            background: white;
-            padding: 25px;
-            border-radius: var(--radius-lg);
-            box-shadow: var(--shadow-md);
-            margin-bottom: 30px;
-        }
-
-        .input-group {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-
-        .input-group input {
-            padding: 10px 15px;
-            border: 2px solid var(--border-color);
-            border-radius: var(--radius-sm);
-            font-size: 0.95em;
-            transition: all 0.2s;
-            flex: 1;
-            min-width: 200px;
-        }
-
-        .input-group input:focus {
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.2);
-            outline: none;
-        }
-
-        .input-group button {
-            padding: 10px 20px;
-            background: var(--primary-color);
-            color: white;
-            border: none;
-            border-radius: var(--radius-sm);
-            cursor: pointer;
-            font-weight: 500;
-            transition: all 0.2s;
-            min-width: 120px;
-        }
-
-        .input-group button:hover {
-            background: var(--primary-dark);
-            transform: translateY(-1px);
-            box-shadow: var(--shadow-sm);
-        }
-
-        .input-group button:active {
-            transform: translateY(0);
-        }
-
-        .speed-control {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            padding: 10px;
-            background: var(--background-color);
-            border-radius: var(--radius-sm);
-        }
-
-        .speed-control label {
-            font-weight: 500;
-            color: var(--text-color);
-            min-width: 60px;
-        }
-
-        .speed-control input[type="range"] {
-            flex: 1;
-            height: 6px;
-            -webkit-appearance: none;
-            background: var(--border-color);
-            border-radius: 3px;
-            outline: none;
-        }
-
-        .speed-control input[type="range"]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            width: 18px;
-            height: 18px;
-            background: var(--primary-color);
-            border-radius: 50%;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .speed-control input[type="range"]::-webkit-slider-thumb:hover {
-            transform: scale(1.1);
-            background: var(--primary-dark);
-        }
-
-        /* Info Panel Styles */
-        .info-panel {
-            background: white;
-            padding: 20px;
-            border-radius: var(--radius-md);
-            margin-top: 20px;
-            box-shadow: var(--shadow-sm);
-        }
-
-        .complexity {
-            padding: 10px;
-            margin-bottom: 15px;
-        }
-
-        .complexity-item {
-            flex: 1;
-        }
-
-        .complexity-item .label {
-            font-weight: 500;
-            color: var(--text-color);
-        }
-
-        .complexity-item .value {
-            color: var(--primary-dark);
-            font-family: monospace;
-            font-size: 1.1em;
-        }
-
-        .explanation h3 {
-            color: var(--primary-dark);
-            margin: 0 0 15px 0;
-        }
-
-        .explanation p {
-            color: var(--text-color);
-            line-height: 1.6;
-            margin: 0;
-        }
-
-        /* Error Message Styles */
-        .error {
-            background: #fff5f5;
-            color: #c53030;
-            padding: 15px;
-            border-radius: var(--radius-md);
-            border-left: 4px solid #c53030;
-            margin: 10px 0;
-            font-weight: 500;
-        }
-
-        /* Responsive Adjustments */
-        @media (max-width: 768px) {
-            .visualization-area {
-                max-height: 500px;
-                padding: 10px;
-            }
-
-            .step-container {
-                padding: 10px;
-                margin-bottom: 10px;
-            }
-
-            .huffman-tree {
-                min-width: 600px;
-                height: 450px;
-                padding: 30px;
-            }
-
-            .platforms-container {
-                height: 250px;
-            }
-        }
-
-        /* Update responsive styles for Huffman tree */
-        @media (max-width: 1200px) {
-            .huffman-tree {
-                min-width: 800px;
-                height: 500px;
-                padding: 35px;
-                margin: 10px auto 25px;
-            }
-            
-            .huffman-node {
-                width: 85px;
-                height: 85px;
-            }
-            
-            .huffman-node.leaf {
-                width: 95px;
-                height: 95px;
-            }
-            
-            .huffman-node .char {
-                font-size: 1.6em;
-            }
-        }
-
-        @media (max-width: 768px) {
-            .huffman-tree {
-                min-width: 600px;
-                height: 400px;
-                padding: 30px;
-                margin: 10px auto 20px;
-            }
-            
-            .huffman-node {
-                width: 75px;
-                height: 75px;
-            }
-            
-            .huffman-node.leaf {
-                width: 85px;
-                height: 85px;
-            }
-            
-            .huffman-node .char {
-                font-size: 1.4em;
-            }
-        }
+    background: #f8f9fa;
+    margin: 0;
+    padding: 20px;
+}
+
+.header {
+    margin-left: 145px;
+    text-align: center;
+    margin-bottom: 20px;
+    padding: 10px 20px;
+    background: white;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-sm);
+    position: relative;
+    min-height: 80px;
+    max-width: 1200px;
+}
+
+.back-button {
+    text-decoration: none;
+    color: var(--primary-color);
+    font-weight: 500;
+    display: inline-block;
+    margin: 0;
+    transition: color 0.3s;
+    position: absolute;
+    top: 10px;
+    left: 20px;
+    font-size: 0.9em;
+    line-height: 1;
+}
+
+.back-button:hover {
+    color: var(--primary-dark);
+}
+
+.header h1 {
+    color: var(--text-primary);
+    margin: 0 0 5px 0;
+    font-size: 2em;
+    font-weight: bold;
+    line-height: 1.2;
+}
+
+.subtitle {
+    color: var(--text-secondary);
+    margin: 0;
+    font-size: 1em;
+    font-weight: normal;
+    line-height: 1.4;
+}
+
+.visualization-container {
+    width: 1250px;
+    margin: 0 auto;
+}
+
+.control-panel {
+    background: white;
+    padding: 15px;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 15px;
+}
+
+.controls-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.input-group {
+    display: flex;
+    gap: 5px;
+    flex-wrap: wrap;
+    margin-bottom: 15px;
+}
+
+.input-group input[type="text"],
+.input-group input[type="number"] {
+    padding: 8px 12px;
+    border: 2px solid #e0e0e0;
+    border-radius: 4px;
+    font-size: 14px;
+    flex: 1;
+    min-width: 150px;
+    transition: border-color 0.3s;
+}
+
+.input-group input[type="text"]:focus,
+.input-group input[type="number"]:focus {
+    border-color: var(--primary-color);
+    outline: none;
+}
+
+.input-group button {
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background-color 0.3s;
+}
+
+.input-group button:hover {
+    background: var(--primary-dark);
+}
+
+.speed-control {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.speed-control label {
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.speed-control input[type="range"] {
+    flex: 1;
+    max-width: 150px;
+}
+
+.visualization-area {
+    background: white;
+    padding: 15px;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 15px;
+    min-height: 400px;
+    overflow: auto;
+}
+
+.step-container {
+    background: white;
+    padding: 15px;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 15px;
+    display: none;
+    overflow: auto;
+}
+
+.step-container.active {
+    display: block;
+}
+
+.step-header {
+    color: var(--text-primary);
+    font-weight: bold;
+    margin: 0 0 10px 0;
+    font-size: 1.1em;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.step-explanation {
+    color: var(--text-secondary);
+    font-size: 0.9em;
+    margin-top: 10px;
+}
+
+.steps-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.step-navigation {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.step-navigation button {
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background-color 0.3s;
+}
+
+.step-navigation button:disabled {
+    background: #e0e0e0;
+    cursor: not-allowed;
+}
+
+.step-navigation button:hover:not(:disabled) {
+    background: var(--primary-dark);
+}
+
+.step-navigation .step-counter {
+    color: var(--text-secondary);
+    font-size: 0.9em;
+    min-width: 100px;
+    text-align: center;
+}
+
+.play-pause-button {
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background-color 0.3s;
+}
+
+.play-pause-button:hover {
+    background: var(--primary-dark);
+}
+
+/* Activity Selection Styles */
+.timeline {
+    height: 100px;
+    padding: 8px;
+    margin: 10px 0;
+    position: relative;
+}
+
+.activity-stack {
+    display: flex;
+    flex-direction: column-reverse;
+    align-items: center;
+    gap: 5px;
+    margin-top: 20px;
+}
+
+.activity-timeline {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    margin-top: 20px;
+}
+
+.activity {
+    width: 80%;
+    height: 35px;
+    background: var(--primary-light);
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 0.9em;
+    transition: all 0.3s;
+    box-shadow: var(--shadow-sm);
+    position: relative;
+}
+
+.activity.selected {
+    background: var(--secondary-color);
+}
+
+.activity.current {
+    background: #3498db;
+    transform: scale(1.1);
+}
+
+/* Knapsack Styles */
+.items-container {
+    height: 150px;
+    padding: 8px;
+    margin: 10px 0;
+    display: flex;
+    gap: 10px;
+}
+
+.item {
+    flex: 1;
+    background: var(--primary-light);
+    min-height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 0.9em;
+    border-radius: 4px;
+    transition: all 0.3s;
+    white-space: pre-wrap;
+    text-align: center;
+    box-shadow: var(--shadow-sm);
+}
+
+.item.selected {
+    background: var(--secondary-color);
+}
+
+.item.current {
+    background: #3498db;
+    transform: scale(1.1);
+}
+
+/* Huffman Coding Styles */
+.huffman-tree {
+    position: relative;
+    height: 600px;
+    width: 100%;
+    min-width: 900px;
+    background: white;
+    border-radius: var(--border-radius);
+    padding: 40px;
+    border: 1px solid #e0e0e0;
+    overflow: visible;
+    margin: 10px auto 30px;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    box-shadow: var(--shadow-sm);
+}
+
+.huffman-node {
+    position: absolute;
+    width: 100px;
+    height: 100px;
+    background: var(--primary-color);
+    border-radius: 50%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.2em;
+    transition: all 0.3s;
+    box-shadow: var(--shadow-md);
+    transform: translate(-50%, -50%);
+}
+
+.huffman-node.leaf {
+    background: var(--secondary-color);
+}
+
+.huffman-node.current {
+    background: #3498db;
+    transform: translate(-50%, -50%) scale(1.1);
+}
+
+.huffman-node .char {
+    font-weight: bold;
+    font-size: 1.8em;
+    margin-bottom: 10px;
+}
+
+.huffman-node .freq {
+    font-size: 1.1em;
+    background: rgba(255, 255, 255, 0.25);
+    padding: 5px 15px;
+    border-radius: 20px;
+}
+
+.huffman-edge {
+    position: absolute;
+    background: #e0e0e0;
+    height: 4px;
+    transform-origin: 0 0;
+    z-index: 1;
+    opacity: 0.6;
+    transition: all 0.3s;
+    border-radius: 2px;
+}
+
+/* Coin Change Styles */
+.coin-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    padding: 20px;
+}
+
+.coin {
+    width: 70px;
+    height: 70px;
+    background: var(--primary-light);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1em;
+    font-weight: 500;
+    transition: all 0.3s;
+    box-shadow: var(--shadow-sm);
+}
+
+.coin.selected {
+    background: var(--secondary-color);
+}
+
+.coin.current {
+    background: #3498db;
+    transform: scale(1.1);
+}
+
+.coin-count {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background: var(--primary-dark);
+    color: white;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    font-size: 0.8em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Job Scheduling Styles */
+.schedule-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 15px;
+    padding: 20px;
+}
+
+.job {
+    padding: 15px;
+    background: var(--primary-light);
+    border-radius: 4px;
+    color: white;
+    font-size: 0.9em;
+    transition: all 0.3s;
+    box-shadow: var(--shadow-sm);
+}
+
+.job.selected {
+    background: var(--secondary-color);
+}
+
+.job.current {
+    background: #3498db;
+    transform: scale(1.1);
+}
+
+/* Platform Styles */
+.platforms-container {
+    height: 300px;
+    padding: 15px;
+    position: relative;
+}
+
+.platform {
+    background: white;
+    border-radius: 4px;
+    padding: 15px;
+    box-shadow: var(--shadow-sm);
+    transition: all 0.3s;
+    position: relative;
+    min-height: 60px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.platform-number {
+    position: absolute;
+    left: -10px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: var(--primary-color);
+    color: white;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8em;
+    font-weight: bold;
+}
+
+.train {
+    background: var(--primary-light);
+    border-radius: 4px;
+    padding: 10px 15px;
+    color: white;
+    font-size: 0.9em;
+    min-width: 120px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s;
+    box-shadow: var(--shadow-sm);
+}
+
+.train.arriving {
+    background: var(--secondary-color);
+}
+
+.train.departing {
+    background: var(--primary-color);
+}
+
+.train .time {
+    position: absolute;
+    top: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.8em;
+    color: var(--text-primary);
+    background: white;
+    padding: 2px 6px;
+    border-radius: 4px;
+    box-shadow: var(--shadow-sm);
+}
+
+.platform-stats {
+    display: flex;
+    gap: 20px;
+    margin-top: 20px;
+    padding: 15px;
+    background: white;
+    border-radius: 4px;
+    box-shadow: var(--shadow-sm);
+}
+
+.platform-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.platform-stat-label {
+    font-size: 0.8em;
+    color: var(--text-secondary);
+    margin-bottom: 5px;
+}
+
+.platform-stat-value {
+    font-size: 1.2em;
+    font-weight: bold;
+    color: var(--primary-color);
+}
+
+/* Info Panel Styles */
+.info-panel {
+    background: white;
+    padding: 15px;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-sm);
+    margin-top: 15px;
+}
+
+.complexity {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 15px;
+    flex-wrap: wrap;
+}
+
+.complexity-item {
+    flex: 1;
+    text-align: center;
+    padding: 10px;
+    background: var(--primary-light);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-sm);
+    min-width: 200px;
+}
+
+.complexity-item .label {
+    font-weight: bold;
+    color: white;
+    display: block;
+    margin-bottom: 5px;
+    font-size: 0.9em;
+    text-transform: uppercase;
+}
+
+.complexity-item .value {
+    font-family: 'Courier New', monospace;
+    font-size: 1.1em;
+    color: white;
+}
+
+.explanation h3 {
+    color: var(--primary-dark);
+    margin: 0 0 10px 0;
+    font-size: 1.3em;
+}
+
+.explanation p {
+    color: var(--text-secondary);
+    font-size: 0.9em;
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--background-light);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--primary-color);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--primary-dark);
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .input-group {
+        flex-direction: column;
+    }
+
+    .step-navigation {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .step-navigation button {
+        width: 100%;
+    }
+
+    .visualization-area {
+        min-height: 300px;
+    }
+
+    .huffman-tree {
+        min-width: 600px;
+        height: 450px;
+        padding: 30px;
+    }
+}
+
+@media (max-width: 480px) {
+    body {
+        padding: 10px;
+    }
+
+    .control-panel,
+    .visualization-area,
+    .step-container {
+        padding: 10px;
+    }
+
+    .header h1 {
+        font-size: 1.5em;
+    }
+
+    .subtitle {
+        font-size: 0.9em;
+    }
+}
     </style>
 </head>
 <body>
@@ -908,41 +753,75 @@
         let currentStepIndex = 0;
         let visualizationSteps = [];
         const speedControl = document.getElementById('speed');
-        
+        let playInterval = null;
+
         function getDelay() {
             return 600 / speedControl.value;
         }
-        
+
+        function playSteps() {
+            if (playInterval) return;
+            playInterval = setInterval(() => {
+                if (currentStepIndex < visualizationSteps.length - 1) {
+                    showNextStep();
+                } else {
+                    clearInterval(playInterval);
+                    playInterval = null;
+                }
+            }, getDelay());
+        }
+
+        function pauseSteps() {
+            if (playInterval) {
+                clearInterval(playInterval);
+                playInterval = null;
+            }
+        }
+
         function createStepNavigation(totalSteps) {
             const nav = document.createElement('div');
             nav.className = 'step-navigation';
-            
+
             const prevBtn = document.createElement('button');
             prevBtn.innerHTML = '← Previous';
             prevBtn.onclick = showPreviousStep;
             prevBtn.disabled = true;
-            
+
             const counter = document.createElement('div');
             counter.className = 'step-counter';
             counter.textContent = `Step 1 of ${totalSteps}`;
-            
+
             const nextBtn = document.createElement('button');
             nextBtn.innerHTML = 'Next →';
             nextBtn.onclick = showNextStep;
             nextBtn.disabled = totalSteps <= 1;
-            
+
+            const playPauseBtn = document.createElement('button');
+            playPauseBtn.className = 'play-pause-button';
+            playPauseBtn.innerHTML = 'Play';
+            playPauseBtn.onclick = () => {
+                if (playInterval) {
+                    pauseSteps();
+                    playPauseBtn.innerHTML = 'Play';
+                } else {
+                    playSteps();
+                    playPauseBtn.innerHTML = 'Pause';
+                }
+            };
+
             nav.appendChild(prevBtn);
             nav.appendChild(counter);
             nav.appendChild(nextBtn);
-            
+            nav.appendChild(playPauseBtn);
+
             return nav;
         }
-        
+
         function updateStepNavigation() {
             const nav = document.querySelector('.step-navigation');
             if (!nav) return;
-            
-            const [prevBtn, counter, nextBtn] = nav.children;
+
+            const [prevBtn, counter, nextBtn, playPauseBtn] = nav.children;
             prevBtn.disabled = currentStepIndex <= 0;
             nextBtn.disabled = currentStepIndex >= visualizationSteps.length - 1;
             counter.textContent = `Step ${currentStepIndex + 1} of ${visualizationSteps.length}`;
@@ -952,11 +831,11 @@
             if (currentStepIndex < visualizationSteps.length - 1) {
                 const currentStep = document.querySelectorAll('.step-container')[currentStepIndex];
                 currentStep.classList.remove('active');
-                
+
                 currentStepIndex++;
                 const nextStep = document.querySelectorAll('.step-container')[currentStepIndex];
                 nextStep.classList.add('active');
-                
+
                 updateStepNavigation();
             }
         }
@@ -965,11 +844,11 @@
             if (currentStepIndex > 0) {
                 const currentStep = document.querySelectorAll('.step-container')[currentStepIndex];
                 currentStep.classList.remove('active');
-                
+
                 currentStepIndex--;
                 const prevStep = document.querySelectorAll('.step-container')[currentStepIndex];
                 prevStep.classList.add('active');
-                
+
                 updateStepNavigation();
             }
         }
@@ -980,32 +859,32 @@
                 if (currentStep) {
                     currentStep.classList.remove('active');
                 }
-                
+
                 currentStepIndex = index;
                 const newStep = document.querySelectorAll('.step-container')[currentStepIndex];
                 if (newStep) {
                     newStep.classList.add('active');
                 }
-                
+
                 updateStepNavigation();
             }
         }
-        
+
         function generateRandomInput() {
             const algorithmId = '{{ algorithm_id }}';
-            
+
             if (algorithmId === 'greedy/activity') {
                 const n = Math.floor(Math.random() * 4) + 4;  // 4-7 activities
                 const startTimes = [];
                 const finishTimes = [];
-                
+
                 for (let i = 0; i < n; i++) {
                     const start = Math.floor(Math.random() * 10);
                     const duration = Math.floor(Math.random() * 3) + 1;
                     startTimes.push(start);
                     finishTimes.push(start + duration);
                 }
-                
+
                 document.getElementById('startTimes').value = startTimes.join(',');
                 document.getElementById('finishTimes').value = finishTimes.join(',');
             }
@@ -1014,7 +893,7 @@
                 const values = Array.from({length: n}, () => Math.floor(Math.random() * 100) + 1);
                 const weights = Array.from({length: n}, () => Math.floor(Math.random() * 30) + 1);
                 const capacity = Math.floor(Math.random() * 50) + 30;
-                
+
                 document.getElementById('values').value = values.join(',');
                 document.getElementById('weights').value = weights.join(',');
                 document.getElementById('capacity').value = capacity;
@@ -1024,19 +903,19 @@
                 const n = Math.floor(Math.random() * 3) + 4;  // 4-6 characters
                 const selectedChars = [];
                 const freqs = [];
-                
+
                 for (let i = 0; i < n; i++) {
                     selectedChars.push(chars[Math.floor(Math.random() * chars.length)]);
                     freqs.push(Math.floor(Math.random() * 10) + 1);
                 }
-                
+
                 document.getElementById('chars').value = selectedChars.join(',');
                 document.getElementById('freqs').value = freqs.join(',');
             }
             else if (algorithmId === 'greedy/coin-change') {
                 const coins = [1, 2, 5, 10, 20, 50];
                 const amount = Math.floor(Math.random() * 100) + 1;
-                
+
                 document.getElementById('coins').value = coins.join(',');
                 document.getElementById('amount').value = amount;
             }
@@ -1045,7 +924,7 @@
                 const jobs = Array.from({length: n}, (_, i) => i + 1);
                 const deadlines = Array.from({length: n}, () => Math.floor(Math.random() * n) + 1);
                 const profits = Array.from({length: n}, () => Math.floor(Math.random() * 50) + 1);
-                
+
                 document.getElementById('jobs').value = jobs.join(',');
                 document.getElementById('deadlines').value = deadlines.join(',');
                 document.getElementById('profits').value = profits.join(',');
@@ -1054,38 +933,38 @@
                 const n = Math.floor(Math.random() * 3) + 4;  // 4-6 trains
                 const arrivals = [];
                 const departures = [];
-                
+
                 for (let i = 0; i < n; i++) {
                     const arrival = Math.floor(Math.random() * 12) * 100 + Math.floor(Math.random() * 60);
                     const duration = Math.floor(Math.random() * 200) + 30;
                     arrivals.push(arrival);
                     departures.push(arrival + duration);
                 }
-                
+
                 document.getElementById('arrivals').value = arrivals.join(',');
                 document.getElementById('departures').value = departures.join(',');
             }
         }
-        
+
         function createStepContainer(stepNumber, content, explanation) {
             const container = document.createElement('div');
             container.className = 'step-container';
-            
+
             const header = document.createElement('div');
             header.className = 'step-header';
             header.innerHTML = `<span>Step ${stepNumber}</span>`;
-            
+
             const explanationDiv = document.createElement('div');
             explanationDiv.className = 'step-explanation';
             explanationDiv.textContent = explanation || 'No explanation available';
-            
+
             container.appendChild(header);
             container.appendChild(content);
             container.appendChild(explanationDiv);
-            
+
             return container;
         }
-        
+
         function displayVisualization(step, stepNumber) {
             if (!step) {
                 console.error('Step data is undefined');
@@ -1094,30 +973,30 @@
 
             const stepContent = document.createElement('div');
             const algorithmId = '{{ algorithm_id }}';
-            
+
             if (algorithmId === 'greedy/activity') {
                 if (!step.activities || !step.start_times || !step.finish_times) {
                     console.error('Missing required activity data');
                     return createStepContainer(stepNumber, stepContent, 'Missing activity data');
                 }
 
-                const timeline = document.createElement('div');
-                timeline.className = 'timeline';
-                
+                const timelineContainer = document.createElement('div');
+                timelineContainer.className = 'activity-timeline';
+
                 step.activities.forEach(activity => {
                     if (typeof activity === 'undefined') return;
-                    
+
                     const activityElement = document.createElement('div');
                     activityElement.className = 'activity' + 
                         (Array.isArray(step.selected) && step.selected.includes(activity) ? ' selected' : '') +
                         (activity === step.current ? ' current' : '');
                     activityElement.style.left = `${(step.start_times[activity] || 0) * 10}%`;
                     activityElement.style.width = `${((step.finish_times[activity] || 0) - (step.start_times[activity] || 0)) * 10}%`;
-                    activityElement.textContent = activity;
-                    timeline.appendChild(activityElement);
+                    activityElement.textContent = `Activity ${activity}`;
+                    timelineContainer.appendChild(activityElement);
                 });
-                
-                stepContent.appendChild(timeline);
+
+                stepContent.appendChild(timelineContainer);
             }
             else if (algorithmId === 'greedy/fractional-knapsack') {
                 if (!step.items || !step.values || !step.weights) {
@@ -1127,27 +1006,27 @@
 
                 const itemsContainer = document.createElement('div');
                 itemsContainer.className = 'items-container';
-                
+
                 step.items.forEach(item => {
                     if (typeof item === 'undefined') return;
-                    
+
                     const itemElement = document.createElement('div');
                     itemElement.className = 'item';
-                    
+
                     const selected = Array.isArray(step.selected) ? step.selected.find(([i, _]) => i === item) : null;
                     if (selected) {
                         itemElement.classList.add('selected');
                         itemElement.style.height = `${selected[1] * 100}%`;
                     }
-                    
+
                     if (item === step.current_item) {
                         itemElement.classList.add('current');
                     }
-                    
+
                     itemElement.textContent = `V:${step.values[item] || 0}\nW:${step.weights[item] || 0}`;
                     itemsContainer.appendChild(itemElement);
                 });
-                
+
                 stepContent.appendChild(itemsContainer);
             }
             else if (algorithmId === 'greedy/huffman') {
@@ -1158,52 +1037,52 @@
 
                 const treeContainer = document.createElement('div');
                 treeContainer.className = 'huffman-tree';
-                
+
                 // Create nodes
                 step.nodes.forEach(node => {
                     const nodeElement = document.createElement('div');
                     nodeElement.className = 'huffman-node' + 
                         (node.is_leaf ? ' leaf' : ' internal') +
                         (node.id === step.current ? ' current' : '');
-                    
+
                     nodeElement.style.left = `${node.x}px`;
                     nodeElement.style.top = `${node.y}px`;
-                    
+
                     // Add content
                     const charDiv = document.createElement('div');
                     charDiv.className = 'char';
                     charDiv.textContent = node.char || '';
-                    
+
                     const freqDiv = document.createElement('div');
                     freqDiv.className = 'freq';
                     freqDiv.textContent = node.freq;
-                    
+
                     nodeElement.appendChild(charDiv);
                     nodeElement.appendChild(freqDiv);
-                    
+
                     treeContainer.appendChild(nodeElement);
                 });
-                
+
                 // Create edges
                 if (step.edges && Array.isArray(step.edges)) {
                     step.edges.forEach(edge => {
                         const edgeElement = document.createElement('div');
                         edgeElement.className = 'huffman-edge';
-                        
+
                         const dx = edge.to_x - edge.from_x;
                         const dy = edge.to_y - edge.from_y;
                         const length = Math.sqrt(dx * dx + dy * dy);
                         const angle = Math.atan2(dy, dx);
-                        
+
                         edgeElement.style.width = `${length}px`;
                         edgeElement.style.left = `${edge.from_x}px`;
                         edgeElement.style.top = `${edge.from_y}px`;
                         edgeElement.style.transform = `rotate(${angle}rad)`;
-                        
+
                         treeContainer.appendChild(edgeElement);
                     });
                 }
-                
+
                 stepContent.appendChild(treeContainer);
             }
             else if (algorithmId === 'greedy/coin-change') {
@@ -1214,30 +1093,30 @@
 
                 const coinContainer = document.createElement('div');
                 coinContainer.className = 'coin-container';
-                
+
                 step.coins.forEach(coin => {
                     const coinElement = document.createElement('div');
                     coinElement.className = 'coin' + 
                         (step.selected.some(c => c === coin) ? ' selected' : '') +
                         (coin === step.current_coin ? ' current' : '');
-                    
+
                     const count = step.selected.filter(c => c === coin).length;
                     coinElement.textContent = coin;
-                    
+
                     if (count > 0) {
                         const countBadge = document.createElement('div');
                         countBadge.className = 'coin-count';
                         countBadge.textContent = count;
                         coinElement.appendChild(countBadge);
                     }
-                    
+
                     coinContainer.appendChild(coinElement);
                 });
-                
+
                 const remainingDiv = document.createElement('div');
                 remainingDiv.className = 'step-explanation';
                 remainingDiv.textContent = `Remaining amount: ${step.remaining}`;
-                
+
                 stepContent.appendChild(coinContainer);
                 stepContent.appendChild(remainingDiv);
             }
@@ -1249,22 +1128,22 @@
 
                 const scheduleContainer = document.createElement('div');
                 scheduleContainer.className = 'schedule-container';
-                
+
                 step.jobs.forEach((job, index) => {
                     const jobElement = document.createElement('div');
                     jobElement.className = 'job' + 
                         (Array.isArray(step.selected) && step.selected.includes(job) ? ' selected' : '') +
                         (job === step.current_job ? ' current' : '');
-                    
+
                     jobElement.innerHTML = `
                         <strong>Job ${job}</strong><br>
                         Deadline: ${step.deadlines[index]}<br>
                         Profit: ${step.profits[index]}
                     `;
-                    
+
                     scheduleContainer.appendChild(jobElement);
                 });
-                
+
                 stepContent.appendChild(scheduleContainer);
             }
             else if (algorithmId === 'greedy/platforms') {
@@ -1275,7 +1154,7 @@
 
                 const platformsContainer = document.createElement('div');
                 platformsContainer.className = 'platforms-container';
-                
+
                 // Create platform rows
                 for (let i = 0; i < step.max_platforms; i++) {
                     const platform = document.createElement('div');
@@ -1284,7 +1163,7 @@
                     platform.textContent = `Platform ${i + 1}`;
                     platformsContainer.appendChild(platform);
                 }
-                
+
                 // Add current event indicator
                 const eventIndicator = document.createElement('div');
                 eventIndicator.className = `train ${step.event_type}` + 
@@ -1293,39 +1172,39 @@
                 eventIndicator.style.top = '10px';
                 eventIndicator.textContent = `${step.time} (${step.event_type})`;
                 platformsContainer.appendChild(eventIndicator);
-                
+
                 // Add platform stats
                 const statsDiv = document.createElement('div');
                 statsDiv.className = 'platform-stats';
-                
+
                 const currentStat = document.createElement('div');
                 currentStat.className = 'platform-stat';
                 currentStat.innerHTML = `
                     <div class="label">Current Platforms</div>
                     <div class="value">${step.current_platforms}</div>
                 `;
-                
+
                 const maxStat = document.createElement('div');
                 maxStat.className = 'platform-stat';
                 maxStat.innerHTML = `
                     <div class="label">Maximum Needed</div>
                     <div class="value">${step.max_platforms}</div>
                 `;
-                
+
                 statsDiv.appendChild(currentStat);
                 statsDiv.appendChild(maxStat);
                 platformsContainer.appendChild(statsDiv);
-                
+
                 stepContent.appendChild(platformsContainer);
             }
 
             return createStepContainer(stepNumber, stepContent, step.explanation);
         }
-        
+
         async function visualize(algorithmId) {
             const container = document.getElementById('visualizationContainer');
             container.innerHTML = '';
-            
+
             // Add special class for Huffman visualization
             const visualizationArea = container.closest('.visualization-area');
             if (visualizationArea) {
@@ -1334,40 +1213,40 @@
                     visualizationArea.classList.add('huffman');
                 }
             }
-            
+
             const data = {};
-            
+
             try {
                 if (algorithmId === 'greedy/activity') {
                     const startTimesStr = document.getElementById('startTimes').value.trim();
                     const finishTimesStr = document.getElementById('finishTimes').value.trim();
-                    
+
                     if (!startTimesStr || !finishTimesStr) {
                         throw new Error('Please enter both start times and finish times');
                     }
-                    
+
                     const startTimes = startTimesStr.split(',').map(Number);
                     const finishTimes = finishTimesStr.split(',').map(Number);
-                    
+
                     if (startTimes.some(isNaN) || finishTimes.some(isNaN)) {
                         throw new Error('Invalid input: Please enter valid numbers');
                     }
-                    
+
                     if (startTimes.length !== finishTimes.length) {
                         throw new Error('Number of start times must match number of finish times');
                     }
-                    
+
                     if (startTimes.length === 0) {
                         throw new Error('Please enter at least one activity');
                     }
-                    
+
                     // Validate that finish times are after start times
                     for (let i = 0; i < startTimes.length; i++) {
                         if (finishTimes[i] <= startTimes[i]) {
                             throw new Error(`Activity ${i}: Finish time must be after start time`);
                         }
                     }
-                    
+
                     data.start_times = startTimes;
                     data.finish_times = finishTimes;
                 }
@@ -1375,11 +1254,11 @@
                     const values = document.getElementById('values').value.split(',').map(Number);
                     const weights = document.getElementById('weights').value.split(',').map(Number);
                     const capacity = parseInt(document.getElementById('capacity').value);
-                    
+
                     if (values.some(isNaN) || weights.some(isNaN) || isNaN(capacity)) {
                         throw new Error('Invalid input: Please enter valid numbers');
                     }
-                    
+
                     data.values = values;
                     data.weights = weights;
                     data.capacity = capacity;
@@ -1401,56 +1280,56 @@
                     data.arrivals = document.getElementById('arrivals').value.split(',').map(Number);
                     data.departures = document.getElementById('departures').value.split(',').map(Number);
                 }
-                
+
                 const response = await fetch(`/api/${algorithmId}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(data)
                 });
-                
+
                 if (!response.ok) {
                     throw new Error(`Server error: ${response.status}`);
                 }
-                
+
                 const result = await response.json();
-                
+
                 if (!result || !Array.isArray(result.steps)) {
                     throw new Error('Invalid response from server');
                 }
-                
+
                 // Store steps for navigation
                 visualizationSteps = result.steps;
                 currentStepIndex = 0;
-                
+
                 // Clear previous visualization
                 container.innerHTML = '';
-                
+
                 // Add navigation controls
                 const navigation = createStepNavigation(visualizationSteps.length);
                 container.appendChild(navigation);
-                
+
                 // Create containers for all steps but only show the first one
                 visualizationSteps.forEach((step, index) => {
                     const stepViz = displayVisualization(step, index + 1);
                     stepViz.classList.toggle('active', index === 0);
                     container.appendChild(stepViz);
                 });
-                
+
             } catch (error) {
                 console.error('Visualization error:', error);
                 container.innerHTML = `<div class="error" style="color: red; padding: 10px;">Error: ${error.message}</div>`;
             }
         }
-        
+
         function resetVisualization() {
             const inputs = document.querySelectorAll('input[type="text"], input[type="number"]');
             inputs.forEach(input => input.value = '');
-            
+
             document.getElementById('visualizationContainer').innerHTML = '';
         }
-        
+
         // Initialize with random input
         generateRandomInput();
     </script>
 </body>
-</html> 
+</html>

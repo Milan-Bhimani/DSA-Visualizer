@@ -4,384 +4,572 @@
     <title>{{ algorithm_name }} - Algorithm Visualizer</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <style>
-        :root {
-            --primary-color: #03A9F4;
-            --primary-dark: #0288D1;
-            --success-color: #4FC3F7;
-            --error-color: #ef5350;
-            --background-color: #F5F5F5;
-            --text-color: #212121;
-            --border-color: #E0E0E0;
-            --border-light: #EEEEEE;
-            --header-bg: #0277BD;
-            --secondary-color: #757575;
-            --secondary-dark: #616161;
-            --accent-color: #29B6F6;
-            --hover-color: #039BE5;
-            --shadow-color: rgba(0, 0, 0, 0.1);
-        }
+:root {
+    --primary-color: black;
+    --primary-dark: black;
+    --primary-light: black;
+    --secondary-color: #4caf50;
+    --text-primary: black;
+    --text-secondary: #757575;
+    --background-light: #fafafa;
+    --shadow-sm: 0 2px 4px rgba(0,0,0,0.1);
+    --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
+    --border-radius: 8px;
+}
 
-        .visualization-container {
-            width: 90%;
-            max-width: 1200px;
-            margin: 20px auto;
-        }
+body {
+    font-family: 'Roboto', sans-serif;
+    line-height: 1.6;
+    color: var(--text-primary);
+    background: #f8f9fa;
+    margin: 0;
+    padding: 20px;
+}
 
-        .control-panel {
-            background: rgba(255, 255, 255, 0.9);
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            margin-bottom: 20px;
-        }
 
-        .controls-wrapper {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 15px;
-            justify-content: center;
-            align-items: center;
-        }
 
-        .input-group {
-            margin-bottom: 20px;
-            background-color: var(--background-color);
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: inset 0 2px 4px var(--shadow-color);
-        }
+.header {
+    text-align: center;
+    margin-bottom: 10px;
+    padding: 18px 10px;
+    background: white;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-sm);
+    position: relative;
+    border-top: none;
+    min-height: 80px;
+    max-width: 1200px; /* Match container's max-width */
+    margin-left: auto;
+    margin-right: auto; /* Center within .container */
+}
 
-        .input-group input, .input-group button {
-            padding: 12px 15px;
-            border: 2px solid var(--border-color);
-            border-radius: 8px;
-            font-size: 1em;
-            transition: all 0.3s ease;
-            background-color: white;
-            box-shadow: inset 0 1px 3px var(--shadow-color);
-        }
+.back-button {
+    text-decoration: none;
+    color: var(--primary-color);
+    font-weight: 500;
+    display: inline-block;
+    margin: 0;
+    transition: color 0.3s;
+    position: absolute;
+    top: 10px;
+    left: 20px;
+    font-size: 0.9em;
+    line-height: 1;
+}
 
-        .input-group button {
-            background: var(--primary-color);
-            color: white;
-            border: none;
-            cursor: pointer;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
+.back-button:hover {
+    color: var(--primary-dark);
+}
 
-        .input-group button:hover {
-            background: var(--hover-color);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px var(--shadow-color);
-        }
+.header h1 {
+    color: var(--text-primary);
+    margin: 0 0 5px 0;
+    font-size: 2em;
+    font-weight: bold;
+    line-height: 1.2;
+}
 
-        .visualization-area {
-            background: white;
-            border-radius: 8px;
-            padding: 25px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            overflow-y: auto;
-            max-height: 800px;
-        }
+.subtitle {
+    color: var(--text-secondary);
+    margin: 0;
+    font-size: 1em;
+    font-weight: normal;
+    line-height: 1.4;
+}
 
-        .step-container {
-            position: relative;
-            padding-left: 20px;
-            margin-bottom: 15px;
-        }
+.visualization-container {
+    /* max-width: 1200px; Match container's max-width */
+    margin: 0 auto; /* Center within viewport */
+    width: 1250px; /* Ensure full width within container */
+}
 
-        .step-container::before {
-            content: '';
-            position: absolute;
-            left: 2px;
-            top: 0;
-            bottom: 0;
-            width: 2px;
-            background-color: var(--primary-color);
-            opacity: 0.3;
-        }
+.control-panel {
+    background: white;
+    padding: 15px;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 15px;
+    max-width: 1200px; /* Match container's max-width */
+    margin-left: auto;
+    margin-right: auto; /* Center within .visualization-container */
+}
 
-        .step-container:last-child::before {
-            height: 50%;
-        }
+.controls-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
 
-        .step-number {
-            position: absolute;
-            left: -10px;
-            top: 50%;
-            transform: translateY(-50%);
-            background: var(--primary-color);
-            color: white;
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.9em;
-            font-weight: bold;
-        }
+.input-group {
+    display: flex;
+    gap: 5px;
+    flex-wrap: wrap;
+    margin-bottom: 15px;
+}
 
-        .step-content {
-            background: white;
-            padding: 15px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px var(--shadow-color);
-            margin-left: 15px;
-        }
+.input-group input[type="text"],
+.input-group input[type="number"] {
+    padding: 8px 12px;
+    border: 2px solid #e0e0e0;
+    border-radius: 4px;
+    font-size: 14px;
+    flex: 1;
+    min-width: 150px;
+    transition: border-color 0.3s;
+}
 
-        .step-explanation {
-            margin: 15px 0;
-            padding: 15px;
-            border-radius: 8px;
-            text-align: left;
-            font-size: 1.1em;
-            background-color: var(--background-color);
-            box-shadow: 0 2px 4px var(--shadow-color);
-            position: relative;
-            padding-left: 45px;
-        }
+.input-group input[type="text"]:focus,
+.input-group input[type="number"]:focus {
+    border-color: var(--primary-color);
+    outline: none;
+}
 
-        .step-explanation::before {
-            content: '→';
-            position: absolute;
-            left: 15px;
-            top: 50%;
-            transform: translateY(-50%);
-            font-size: 1.5em;
-            color: var(--primary-color);
-        }
+.input-group button {
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background-color 0.3s;
+    margin-right: 5px;
+}
 
-        .step-explanation.success {
-            background: linear-gradient(135deg, var(--success-color), var(--primary-color));
-            color: white;
-        }
+.input-group button:hover {
+    background: var(--primary-dark);
+}
 
-        .step-explanation.success::before {
-            content: '✓';
-            color: white;
-        }
+.primary-button {
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background-color 0.3s;
+}
 
-        .step-explanation.error {
-            background: linear-gradient(135deg, var(--error-color), #e53935);
-            color: white;
-        }
+.primary-button:hover {
+    background: var(--primary-dark);
+}
 
-        .step-explanation.error::before {
-            content: '×';
-            color: white;
-        }
+.secondary-button {
+    background: var(--primary-light);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background-color 0.3s, color 0.3s;
+}
 
-        .steps-counter {
-            background: linear-gradient(135deg, var(--header-bg), var(--primary-dark));
-            color: white;
-            padding: 15px 25px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 1.1em;
-            font-weight: 500;
-        }
+.secondary-button:hover {
+    background: var(--primary-dark);
+    color: white;
+}
 
-        .point-controls {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 15px;
-        }
+.speed-control {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
 
-        .canvas-container {
-            background: white;
-            border-radius: 8px;
-            padding: 10px;
-            box-shadow: 0 2px 4px var(--shadow-color);
-            margin-bottom: 15px;
-        }
+.speed-control label {
+    color: var(--text-secondary);
+    font-weight: 500;
+}
 
-        canvas {
-            border: 1px solid var(--border-color);
-            border-radius: 4px;
-            margin: 0 auto;
-            display: block;
-        }
+.speed-control input[type="range"] {
+    flex: 1;
+    max-width: 150px;
+}
 
-        .info-panel {
-            margin-top: 30px;
-            padding: 25px;
-            background-color: var(--background-color);
-            border-radius: 8px;
-            box-shadow: inset 0 2px 4px var(--shadow-color);
-        }
+#speedLabel {
+    color: var(--text-secondary);
+    font-size: 0.9em;
+}
 
-        .complexity {
-            display: flex;
-            gap: 30px;
-            margin-bottom: 25px;
-            padding: 20px;
-            background-color: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px var(--shadow-color);
-        }
+.point-controls {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+}
 
-        .complexity-item {
-            flex: 1;
-        }
+.canvas-container {
+    background: white;
+    padding: 15px;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 15px;
+    max-width: 1200px; /* Match container's max-width */
+    margin-left: auto;
+    margin-right: auto; /* Center within .visualization-container */
+}
 
-        .complexity-item .label {
-            font-weight: 600;
-            color: var(--text-color);
-            margin-right: 10px;
-        }
+#pointCanvas {
+    display: block;
+    width: 100%;
+    max-width: 600px;
+    height: auto;
+}
 
-        .complexity-item .value {
-            color: var(--primary-color);
-            font-family: 'Courier New', monospace;
-        }
+.matrix-controls {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+}
 
-        .explanation {
-            padding: 20px;
-            background-color: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px var(--shadow-color);
-        }
+.matrix-input-container {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+}
 
-        .explanation h3 {
-            margin-top: 0;
-            color: var(--text-color);
-            font-size: 1.3em;
-        }
+.matrix-input {
+    background: white;
+    padding: 15px;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-sm);
+    flex: 1;
+    min-width: 250px;
+    max-width: 590px; /* Half of 1200px minus padding and gaps, roughly */
+}
 
-        .speed-control {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            margin: 25px 0;
-            padding: 20px;
-            background-color: var(--background-color);
-            border-radius: 8px;
-            box-shadow: inset 0 2px 4px var(--shadow-color);
-        }
+.matrix-input h4 {
+    color: var(--primary-dark);
+    margin: 0 0 10px 0;
+    font-size: 1.1em;
+}
 
-        .speed-control label {
-            font-weight: 600;
-            min-width: 120px;
-        }
+.matrix-grid {
+    display: grid;
+    gap: 5px;
+}
 
-        .speed-control input[type="range"] {
-            flex: 1;
-            height: 6px;
-            -webkit-appearance: none;
-            background: var(--border-color);
-            border-radius: 3px;
-            outline: none;
-        }
+.matrix-grid input {
+    padding: 8px;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    font-size: 14px;
+    text-align: center;
+    width: 100%;
+    transition: border-color 0.3s;
+}
 
-        .speed-control input[type="range"]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            width: 20px;
-            height: 20px;
-            background: var(--primary-color);
-            border-radius: 50%;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
+.matrix-grid input:focus {
+    border-color: var(--primary-color);
+    outline: none;
+}
 
-        .speed-control input[type="range"]::-webkit-slider-thumb:hover {
-            transform: scale(1.1);
-        }
+.visualization-area {
+    background: white;
+    padding: 15px;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 15px;
+    min-height: 200px;
+    overflow-y: auto;
+    max-width: 1200px; /* Match container's max-width */
+    margin-left: auto;
+    margin-right: auto; /* Center within .visualization-container */
+}
 
-        #speedLabel {
-            min-width: 80px;
-            text-align: center;
-            font-weight: 500;
-        }
+#visualizationContainer {
+    width: 100%; /* Ensure full width within .visualization-area */
+}
 
-        @media (max-width: 768px) {
-            .container {
-                padding: 10px;
-            }
+.visualization-subcontainer {
+    display: none; /* Hidden until visualization starts */
+}
 
-            .header {
-                padding: 15px;
-            }
+.visualization-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 15px;
+}
 
-            .header h1 {
-                font-size: 2em;
-            }
+.visualization-controls button {
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background-color 0.3s;
+}
 
-            .controls, 
-            .visualization-area {
-                padding: 15px;
-            }
+.visualization-controls button:hover {
+    background: var(--primary-dark);
+}
 
-            .complexity {
-                flex-direction: column;
-                gap: 15px;
-            }
-        }
+.step-counter {
+    color: var(--text-secondary);
+    font-size: 0.9em;
+}
 
-        .how-it-works-panel {
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px var(--shadow-color);
-            margin-bottom: 20px;
-        }
+.sequence-display {
+    display: flex;
+    justify-content: center;
+    gap: 5px;
+    padding: 10px;
+    flex-wrap: wrap;
+}
 
-        .how-it-works-panel h3 {
-            color: var(--primary-color);
-            margin-top: 0;
-            margin-bottom: 15px;
-            font-size: 1.3em;
-        }
+.sequence-item {
+    width: 40px;
+    background: var(--primary-light);
+    border-radius: 4px;
+    font-weight: bold;
+    color: white;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 5px;
+    min-height: 35px;
+}
 
-        .algorithm-steps {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
+.sequence-item.current { /* mid point */
+    background: #3498db;
+    color: white;
+    transform: scale(1.1);
+}
 
-        .algorithm-steps .step {
-            background: var(--background-color);
-            padding: 15px;
-            border-radius: 8px;
-            border-left: 4px solid var(--primary-color);
-        }
+.sequence-item.left { /* left boundary */
+    background: #f4c7c3;
+    color: #c62828;
+}
 
-        .algorithm-steps h4 {
-            color: var(--primary-dark);
-            margin: 0 0 8px 0;
-            font-size: 1.1em;
-        }
+.sequence-item.right { /* right boundary */
+    background: #b3e5fc;
+    color: #0277bd;
+}
 
-        .algorithm-steps p {
-            margin: 0;
-            color: var(--text-color);
-            line-height: 1.5;
-        }
+.sequence-item.target { /* found target */
+    background: #66BB6A;
+    color: white;
+    transform: scale(1.15);
+    box-shadow: var(--shadow-md);
+}
 
-        .complexity-info {
-            margin-top: 20px;
-            padding: 15px;
-            background: var(--background-color);
-            border-radius: 8px;
-            border-left: 4px solid var(--accent-color);
-        }
+.sequence-item.computed {
+    background: #e8f5e9;
+    color: var(--secondary-color);
+}
 
-        .complexity-info p {
-            margin: 5px 0;
-            color: var(--text-color);
-        }
+.array-element.pivot {
+    background: #FFCA28;
+    color: black;
+}
 
-        .complexity-info strong {
-            color: var(--primary-dark);
-        }
+.karatsuba-step, .strassen-step {
+    margin-top: 10px;
+}
+
+.karatsuba-step .numbers, .strassen-step .matrix {
+    margin-bottom: 10px;
+}
+
+.karatsuba-step .numbers div, .strassen-step .matrix h4 {
+    color: var(--text-primary);
+    font-size: 1em;
+}
+
+.karatsuba-step .calculation, .strassen-step table {
+    color: var(--text-secondary);
+    font-size: 0.9em;
+}
+
+.strassen-step table {
+    border-collapse: collapse;
+    margin-top: 5px;
+}
+
+.strassen-step td {
+    padding: 5px;
+    border: 1px solid #e0e0e0;
+    text-align: center;
+}
+
+.info-panel {
+    background: white;
+    padding: 15px;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-sm);
+    margin-top: 15px;
+    max-width: 1200px; /* Match container's max-width */
+    margin-left: auto;
+    margin-right: auto; /* Center within .visualization-container */
+}
+
+.complexity {
+    display: flex;
+    flex-direction: row; /* Force side-by-side layout */
+    flex-wrap: nowrap; /* Prevent wrapping */
+    gap: 10px; /* Reduced gap for tighter fit */
+    margin-bottom: 15px;
+    padding: 5px; /* Minimal padding to save space */
+    background: var(--primary-light);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-sm);
+    width: 100%; /* Ensure full width of parent */
+    overflow-x: auto; /* Allow horizontal scrolling if needed */
+    justify-content: center; /* Center the items horizontally */
+}
+
+.complexity-item {
+    flex: 0 0 calc(50% - 10px); /* Fixed width of 50% minus gap, no shrinking/growing */
+    text-align: center;
+    padding: 8px; /* Reduced padding for tighter fit */
+    background: var(--primary-light);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-sm);
+    box-sizing: border-box; /* Include padding in width */
+    min-width: 150px; /* Minimum width to ensure readability */
+}
+
+.complexity-item .label {
+    font-weight: bold;
+    color: white;
+    display: block;
+    margin-bottom: 5px;
+    font-size: 0.9em;
+    text-transform: uppercase;
+    white-space: nowrap; /* Prevent text wrapping */
+    overflow: hidden; /* Handle overflow */
+    text-overflow: ellipsis; /* Add ellipsis for long text */
+}
+
+.complexity-item .value {
+    font-family: 'Courier New', monospace;
+    font-size: 1.1em;
+    color: white;
+    white-space: nowrap; /* Prevent text wrapping */
+    overflow: hidden; /* Handle overflow */
+    text-overflow: ellipsis; /* Add ellipsis for long text */
+}
+
+.explanation {
+    color: var(--text-secondary);
+    font-size: 0.9em;
+}
+
+.explanation h3 {
+    color: var(--primary-dark);
+    margin: 0 0 10px 0;
+    font-size: 1.3em;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--background-light);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--primary-color);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--primary-dark);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .input-group {
+        flex-direction: column;
+    }
+
+    .controls-wrapper {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .complexity {
+        gap: 5px; /* Further reduce gap on smaller screens */
+        padding: 5px;
+    }
+
+    .complexity-item {
+        padding: 6px;
+        min-width: 120px; /* Slightly smaller minimum width */
+        font-size: 0.9em; /* Slightly reduce font size */
+    }
+
+    .header, .control-panel, .visualization-area, .info-panel {
+        max-width: 100%; /* Allow full width on smaller screens, but capped by .container */
+        margin-left: 0;
+        margin-right: 0;
+    }
+
+    .matrix-input {
+        min-width: 100%; /* Full width on mobile */
+    }
+}
+
+@media (max-width: 480px) {
+    body {
+        padding: 10px;
+    }
+
+    .control-panel, .visualization-area, .info-panel {
+        padding: 10px;
+    }
+
+    .header h1 {
+        font-size: 1.5em;
+    }
+
+    .subtitle {
+        font-size: 0.9em;
+    }
+
+    .back-button {
+        position: static;
+        text-align: left;
+        margin-bottom: 5px;
+    }
+
+    .complexity {
+        gap: 5px;
+        padding: 5px;
+    }
+
+    .complexity-item {
+        padding: 4px;
+        min-width: 100px; /* Even smaller minimum width */
+        font-size: 0.8em; /* Further reduce font size */
+    }
+}
+
+@media (max-width: 320px) {
+    /* Optional: Allow stacking only on extremely small screens */
+    .complexity {
+        flex-direction: column;
+        flex-wrap: wrap;
+        gap: 5px;
+    }
+
+    .complexity-item {
+        flex: 0 0 100%;
+        min-width: 100%;
+        padding: 4px;
+    }
+}
     </style>
 </head>
 <body>
+    <div class="container">
     <div class="header">
         <a href="/" class="back-button">← Back to Algorithms</a>
         <h1>{{ algorithm_name }}</h1>
@@ -396,43 +584,13 @@
                         <input type="text" id="array" placeholder="Sorted array (e.g., 1,3,5,7,9)">
                         <input type="number" id="target" placeholder="Target value">
                         <button onclick="generateRandomArray('sorted')">Random Sorted Array</button>
-                    {% elif algorithm_id == 'divide-conquer/merge-sort' or algorithm_id == 'divide-conquer/quick-sort' %}
+                    {% elif algorithm_id == 'divide-conquer/merge-sort' %}
+                        <input type="text" id="array" placeholder="Array to sort (e.g., 5,2,8,1,9)">
+                        <button onclick="generateRandomArray('unsorted')">Random Array</button>
+                    {% elif algorithm_id == 'divide-conquer/quick-sort' %}
                         <input type="text" id="array" placeholder="Array to sort (e.g., 5,2,8,1,9)">
                         <button onclick="generateRandomArray('unsorted')">Random Array</button>
                     {% elif algorithm_id == 'divide-conquer/closest-pair' %}
-                        <div class="how-it-works-panel">
-                            <h3>How the Closest Pair Algorithm Works</h3>
-                            <div class="algorithm-steps">
-                                <div class="step">
-                                    <h4>1. Initial Setup</h4>
-                                    <p>The algorithm starts by sorting all points by their x-coordinates. This helps in dividing the points into left and right halves.</p>
-                                </div>
-                                <div class="step">
-                                    <h4>2. Divide</h4>
-                                    <p>The points are divided into two equal halves using a vertical line. This creates a left set and a right set of points.</p>
-                                </div>
-                                <div class="step">
-                                    <h4>3. Conquer</h4>
-                                    <p>Find the minimum distance recursively in both left and right halves. Let's call this distance δ = min(dl, dr).</p>
-                                </div>
-                                <div class="step">
-                                    <h4>4. Strip Creation</h4>
-                                    <p>Create a strip of width 2δ centered on the dividing line. Only points within this strip can have a distance less than δ.</p>
-                                </div>
-                                <div class="step">
-                                    <h4>5. Strip Processing</h4>
-                                    <p>Compare each point in the strip with only the next 7 points (proof shows we don't need to check more). Update δ if a smaller distance is found.</p>
-                                </div>
-                                <div class="step">
-                                    <h4>6. Final Result</h4>
-                                    <p>Return the minimum of δ and the minimum distance found in the strip. This is guaranteed to be the closest pair distance.</p>
-                                </div>
-                            </div>
-                            <div class="complexity-info">
-                                <p><strong>Time Complexity:</strong> O(n log n) - The algorithm uses divide and conquer with efficient strip processing</p>
-                                <p><strong>Space Complexity:</strong> O(n) - Additional space needed for sorting and strip processing</p>
-                            </div>
-                        </div>
                         <div class="point-controls">
                             <button onclick="addPoint()">Add Point</button>
                             <button onclick="generateRandomPoints()">Random Points</button>
@@ -446,50 +604,6 @@
                         <input type="number" id="num2" placeholder="Second number (e.g., 5678)">
                         <button onclick="generateRandomNumbers()">Random Numbers</button>
                     {% elif algorithm_id == 'divide-conquer/strassen' %}
-                        <div class="how-it-works-panel">
-                            <h3>How Strassen's Matrix Multiplication Works</h3>
-                            <div class="algorithm-steps">
-                                <div class="step">
-                                    <h4>1. Base Case</h4>
-                                    <p>For small matrices (2x2), perform direct multiplication as it's more efficient than further subdivision.</p>
-                                </div>
-                                <div class="step">
-                                    <h4>2. Matrix Division</h4>
-                                    <p>Split each input matrix into four equal quarters:</p>
-                                    <pre>
-Matrix A:         Matrix B:
-[A11  A12]       [B11  B12]
-[A21  A22]       [B21  B22]</pre>
-                                </div>
-                                <div class="step">
-                                    <h4>3. Seven Products (Strassen's Innovation)</h4>
-                                    <p>Instead of 8 multiplications in standard matrix multiplication, compute these 7 products:</p>
-                                    <pre>
-P1 = A11 × (B12 - B22)
-P2 = (A11 + A12) × B22
-P3 = (A21 + A22) × B11
-P4 = A22 × (B21 - B11)
-P5 = (A11 + A22) × (B11 + B22)
-P6 = (A12 - A22) × (B21 + B22)
-P7 = (A11 - A21) × (B11 + B12)</pre>
-                                </div>
-                                <div class="step">
-                                    <h4>4. Result Calculation</h4>
-                                    <p>Combine the products to form the result matrix C:</p>
-                                    <pre>
-C11 = P5 + P4 - P2 + P6
-C12 = P1 + P2
-C21 = P3 + P4
-C22 = P5 + P1 - P3 - P7</pre>
-                                </div>
-                            </div>
-                            <div class="complexity-info">
-                                <p><strong>Time Complexity:</strong> O(n^log₂(7)) ≈ O(n^2.807) - Better than standard O(n³)</p>
-                                <p><strong>Space Complexity:</strong> O(n²) - Additional space needed for recursive calls</p>
-                                <p><strong>Key Advantage:</strong> Reduces multiplication operations from 8 to 7, leading to asymptotic improvement</p>
-                                <p><strong>Best Use Case:</strong> Most effective for large matrices where the overhead is justified by the reduced multiplication count</p>
-                            </div>
-                        </div>
                         <div class="matrix-controls">
                             <button onclick="setMatrixSize()">Set Matrix Size</button>
                             <button onclick="generateRandomMatrices()">Random Matrices</button>
@@ -518,11 +632,18 @@ C22 = P5 + P1 - P3 - P7</pre>
         </div>
 
         <div class="visualization-area">
-            <div class="steps-counter">
-                <span>Current Step: <span id="currentStepNumber">0</span></span>
-                <span>Total Steps: <span id="totalSteps">0</span></span>
+            <div id="visualizationContainer">
+                <div class="visualization-subcontainer">
+                    <div class="visualization-controls">
+                        <button id="prevButton" onclick="navigateStep(-1)">← Previous</button>
+                        <button id="playButton" onclick="toggleAnimation(this)">Play</button>
+                        <button id="nextButton" onclick="navigateStep(1)">Next →</button>
+                        <div class="step-counter" id="stepCounter">Step 0 of 0</div>
+                    </div>
+                    <div id="stepDisplay"></div>
+                    <div id="explanationDisplay" class="step-explanation"></div>
+                </div>
             </div>
-            <div id="visualizationContainer"></div>
             <div class="info-panel">
                 <div class="complexity">
                     <div class="complexity-item">
@@ -537,16 +658,48 @@ C22 = P5 + P1 - P3 - P7</pre>
                 <div class="explanation">
                     <h3>How it works</h3>
                     <p>{{ algorithm_explanation }}</p>
-                    <div class="step-explanation" id="currentStep"></div>
+                    {% if algorithm_id == 'divide-conquer/binary-search' %}
+                        <p>How it works: Repeatedly halves the search range to find the target in a sorted array.</p>
+                    {% elif algorithm_id == 'divide-conquer/merge-sort' %}
+                        <p>How it works: Divides the array into halves, sorts them, and merges them back together.</p>
+                    {% elif algorithm_id == 'divide-conquer/quick-sort' %}
+                        <p>How it works: Partitions the array around a pivot and recursively sorts the subarrays.</p>
+                    {% elif algorithm_id == 'divide-conquer/closest-pair' %}
+                        <p>How it works: Divides points by x-coordinate and finds the closest pair efficiently.</p>
+                    {% elif algorithm_id == 'divide-conquer/karatsuba' %}
+                        <p>How it works: Splits numbers into parts and uses three multiplications to compute the product.</p>
+                    {% elif algorithm_id == 'divide-conquer/strassen' %}
+                        <p>How it works: Divides matrices into quadrants and uses seven multiplications for efficiency.</p>
+                    {% endif %}
                 </div>
             </div>
         </div>
     </div>
-
+</div>
     <script>
-        let currentAnimation = null;
-        let stepCount = 0;
-        let totalSteps = 0;
+       class VisualizationState {
+    constructor() {
+        this.currentStep = 0;
+        this.steps = [];
+        this.animationInterval = null;
+        this.isVisualizing = false;
+        this.algorithmId = '{{ algorithm_id }}';
+        this.target = null;  // Add target property
+    }
+
+    reset() {
+        if (this.animationInterval) {
+            clearInterval(this.animationInterval);
+            this.animationInterval = null;
+        }
+        this.currentStep = 0;
+        this.steps = [];
+        this.isVisualizing = false;
+        // Don't reset target here so it persists
+    }
+}
+
+        const state = new VisualizationState();
         const speedControl = document.getElementById('speed');
         const speedLabel = document.getElementById('speedLabel');
         let points = [];
@@ -555,7 +708,6 @@ C22 = P5 + P1 - P3 - P7</pre>
         let matrixSize = 4;
         let isDrawing = false;
         
-        // Update speed label
         speedControl.addEventListener('input', function() {
             const speeds = ['Very Slow', 'Slow', 'Normal', 'Fast', 'Very Fast'];
             speedLabel.textContent = speeds[this.value - 1];
@@ -566,7 +718,6 @@ C22 = P5 + P1 - P3 - P7</pre>
             return delays[speedControl.value - 1];
         }
 
-        // Canvas event listeners for closest pair
         const canvas = document.getElementById('pointCanvas');
         if (canvas) {
             canvas.addEventListener('mousedown', startDrawing);
@@ -598,7 +749,7 @@ C22 = P5 + P1 - P3 - P7</pre>
         }
         
         function generateRandomArray(type) {
-            const size = Math.floor(Math.random() * 8) + 5; // 5 to 12 elements
+            const size = Math.floor(Math.random() * 8) + 5;
             let arr = Array.from({length: size}, () => Math.floor(Math.random() * 100));
             if (type === 'sorted') {
                 arr.sort((a, b) => a - b);
@@ -608,7 +759,7 @@ C22 = P5 + P1 - P3 - P7</pre>
 
         function generateRandomPoints() {
             points = [];
-            const numPoints = Math.floor(Math.random() * 6) + 5; // 5 to 10 points
+            const numPoints = Math.floor(Math.random() * 6) + 5;
             for (let i = 0; i < numPoints; i++) {
                 points.push([
                     Math.floor(Math.random() * (canvas.width - 40) + 20),
@@ -629,7 +780,6 @@ C22 = P5 + P1 - P3 - P7</pre>
             const ctx = canvas.getContext('2d');
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            // Draw grid
             ctx.strokeStyle = '#eee';
             ctx.lineWidth = 0.5;
             for (let i = 0; i < canvas.width; i += 50) {
@@ -645,7 +795,6 @@ C22 = P5 + P1 - P3 - P7</pre>
                 ctx.stroke();
             }
 
-            // Draw points
             points.forEach((point, index) => {
                 ctx.beginPath();
                 ctx.arc(point[0], point[1], 5, 0, 2 * Math.PI);
@@ -654,7 +803,6 @@ C22 = P5 + P1 - P3 - P7</pre>
                 ctx.strokeStyle = '#2E7D32';
                 ctx.stroke();
                 
-                // Draw point labels
                 ctx.fillStyle = '#000';
                 ctx.font = '12px Arial';
                 ctx.textAlign = 'center';
@@ -668,288 +816,327 @@ C22 = P5 + P1 - P3 - P7</pre>
             const ctx = canvas.getContext('2d');
             ctx.clearRect(0, 0, canvas.width, canvas.height);
         }
-        
-        function displayVisualization(step) {
-            const container = document.getElementById('visualizationContainer');
-            const stepExplanation = document.getElementById('currentStep');
-            
-            // Create step container
-            const stepContainer = document.createElement('div');
-            stepContainer.className = 'step-container';
-            
-            // Add step number
-            const stepNumber = document.createElement('div');
-            stepNumber.className = 'step-number';
-            stepNumber.textContent = stepCount;
-            stepContainer.appendChild(stepNumber);
-            
-            // Add step content
-            const stepContent = document.createElement('div');
-            stepContent.className = 'step-content';
-            
-            const algorithmId = '{{ algorithm_id }}';
-            
-            if (algorithmId === 'divide-conquer/closest-pair') {
-                const canvas = document.createElement('canvas');
-                canvas.width = 600;
-                canvas.height = 400;
-                const ctx = canvas.getContext('2d');
-                
-                // Draw grid
-                ctx.strokeStyle = '#eee';
-                ctx.lineWidth = 0.5;
-                for (let i = 0; i < canvas.width; i += 50) {
-                    ctx.beginPath();
-                    ctx.moveTo(i, 0);
-                    ctx.lineTo(i, canvas.height);
-                    ctx.stroke();
-                }
-                for (let i = 0; i < canvas.height; i += 50) {
-                    ctx.beginPath();
-                    ctx.moveTo(0, i);
-                    ctx.lineTo(canvas.width, i);
-                    ctx.stroke();
-                }
-                
-                // Draw all points
-                step.points.forEach((point, index) => {
-                    ctx.beginPath();
-                    ctx.arc(point[0], point[1], 5, 0, 2 * Math.PI);
-                    ctx.fillStyle = '#4CAF50';
-                    ctx.fill();
-                    ctx.strokeStyle = '#2E7D32';
-                    ctx.stroke();
-                    
-                    // Draw point labels
-                    ctx.fillStyle = '#000';
-                    ctx.font = '12px Arial';
-                    ctx.textAlign = 'center';
-                    ctx.textBaseline = 'bottom';
-                    ctx.fillText(`P${index + 1}`, point[0], point[1] - 8);
-                });
-                
-                // Draw current comparison
-                if (step.comparing) {
-                    ctx.strokeStyle = '#FF5722';
-                    ctx.lineWidth = 2;
-                    ctx.beginPath();
-                    ctx.moveTo(step.comparing[0][0], step.comparing[0][1]);
-                    ctx.lineTo(step.comparing[1][0], step.comparing[1][1]);
-                    ctx.stroke();
-                    
-                    // Highlight compared points
-                    step.comparing.forEach(point => {
-                        ctx.beginPath();
-                        ctx.arc(point[0], point[1], 7, 0, 2 * Math.PI);
-                        ctx.strokeStyle = '#FF5722';
-                        ctx.lineWidth = 2;
-                        ctx.stroke();
-                    });
-                    
-                    // Display distance
-                    if (step.distance) {
-                        ctx.fillStyle = '#000';
-                        ctx.font = '14px Arial';
-                        const midX = (step.comparing[0][0] + step.comparing[1][0]) / 2;
-                        const midY = (step.comparing[0][1] + step.comparing[1][1]) / 2;
-                        ctx.fillText(`Distance: ${step.distance.toFixed(2)}`, midX, midY - 10);
-                    }
-                }
-                
-                // Draw dividing line for divide step
-                if (step.divide_x !== undefined) {
-                    ctx.beginPath();
-                    ctx.strokeStyle = '#2196F3';
-                    ctx.lineWidth = 1;
-                    ctx.setLineDash([5, 5]);
-                    ctx.moveTo(step.divide_x, 0);
-                    ctx.lineTo(step.divide_x, canvas.height);
-                    ctx.stroke();
-                    ctx.setLineDash([]);
-                }
-                
-                // Draw strip area if present
-                if (step.strip_x !== undefined && step.strip_width !== undefined) {
-                    ctx.fillStyle = 'rgba(33, 150, 243, 0.1)';
-                    ctx.fillRect(
-                        step.strip_x - step.strip_width / 2,
-                        0,
-                        step.strip_width,
-                        canvas.height
-                    );
-                }
-                
-                stepContent.appendChild(canvas);
-            } else if (algorithmId === 'divide-conquer/binary-search') {
-                displayBinarySearch(step, stepContent);
-            } else if (algorithmId === 'divide-conquer/merge-sort' || algorithmId === 'divide-conquer/quick-sort') {
-                displaySorting(step, stepContent);
-            } else if (algorithmId === 'divide-conquer/karatsuba') {
-                displayKaratsuba(step, stepContent);
-            } else if (algorithmId === 'divide-conquer/strassen') {
-                displayStrassen(step, stepContent);
-            }
-            
-            // Add step explanation
-            if (step.explanation) {
-                const explanation = document.createElement('div');
-                explanation.className = 'step-explanation';
-                if (step.success === true) {
-                    explanation.classList.add('success');
-                } else if (step.success === false) {
-                    explanation.classList.add('error');
-                }
-                explanation.textContent = step.explanation;
-                stepContent.appendChild(explanation);
-            }
-            
-            stepContainer.appendChild(stepContent);
-            container.appendChild(stepContainer);
-            
-            // Scroll to the latest step
-            container.scrollTop = container.scrollHeight;
-        }
-        
+
         async function visualize(algorithmId) {
-            if (currentAnimation) {
-                currentAnimation.abort = true;
-            }
-            
-            stepCount = 0;
-            document.getElementById('visualizationContainer').innerHTML = '';
-            
-            const data = {};
-            
-            if (algorithmId === 'divide-conquer/binary-search') {
-                data.array = document.getElementById('array').value.split(',').map(Number);
-                data.target = parseInt(document.getElementById('target').value);
-            }
-            else if (algorithmId === 'divide-conquer/merge-sort' || algorithmId === 'divide-conquer/quick-sort') {
-                data.array = document.getElementById('array').value.split(',').map(Number);
-            }
-            else if (algorithmId === 'divide-conquer/closest-pair') {
-                if (points.length < 2) {
-                    alert('Please add at least 2 points');
-                    return;
+    if (state.isVisualizing) return;
+    state.isVisualizing = true;
+    state.reset();
+
+    const container = document.getElementById('visualizationContainer');
+    const loadingDiv = document.createElement('div');
+    loadingDiv.className = 'loading';
+    loadingDiv.textContent = 'Loading visualization...';
+    container.innerHTML = '';
+    container.appendChild(loadingDiv);
+
+    const data = {};
+    try {
+        if (algorithmId === 'divide-conquer/binary-search') {
+            const arrayInput = document.getElementById('array').value;
+            const targetInput = document.getElementById('target').value;
+            if (!arrayInput || !targetInput) throw new Error('Please provide both array and target value');
+            data.array = arrayInput.split(',').map(Number);
+            data.target = parseInt(targetInput);
+            state.target = data.target;
+            console.log('Input data:', data); // Debug input
+        } else if (algorithmId === 'divide-conquer/merge-sort' || algorithmId === 'divide-conquer/quick-sort') {
+            const arrayInput = document.getElementById('array').value;
+            if (!arrayInput) throw new Error('Please provide an array to sort');
+            data.array = arrayInput.split(',').map(Number);
+        } else if (algorithmId === 'divide-conquer/closest-pair') {
+            if (points.length < 2) throw new Error('Please add at least 2 points');
+            data.points = points;
+        } else if (algorithmId === 'divide-conquer/karatsuba') {
+            const num1Input = document.getElementById('num1').value;
+            const num2Input = document.getElementById('num2').value;
+            if (!num1Input || !num2Input) throw new Error('Please provide both numbers');
+            data.x = parseInt(num1Input);
+            data.y = parseInt(num2Input);
+        } else if (algorithmId === 'divide-conquer/strassen') {
+            data.matrix_a = matrixA;
+            data.matrix_b = matrixB;
+        }
+
+        const response = await fetch(`/api/${algorithmId}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+
+        if (!response.ok) throw new Error('Visualization failed');
+
+        const { steps } = await response.json();
+        console.log('Received steps:', steps); // Debug API response
+        if (!steps || !Array.isArray(steps)) throw new Error('Invalid steps data received');
+        
+        // Validate binary search steps
+        if (algorithmId === 'divide-conquer/binary-search') {
+            steps.forEach((step, index) => {
+                if (!step.array || step.left === undefined || step.right === undefined || step.mid === undefined) {
+                    console.warn(`Invalid step data at index ${index}:`, step);
                 }
-                data.points = points;
-            }
-            else if (algorithmId === 'divide-conquer/karatsuba') {
-                data.x = parseInt(document.getElementById('num1').value);
-                data.y = parseInt(document.getElementById('num2').value);
-            }
-            else if (algorithmId === 'divide-conquer/strassen') {
-                data.matrix_a = matrixA;
-                data.matrix_b = matrixB;
-            }
-            
-            try {
-                const response = await fetch(`/api/${algorithmId}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(data)
-                });
-                
-                if (!response.ok) {
-                    throw new Error('Visualization failed');
-                }
-                
-                const { steps } = await response.json();
-                currentAnimation = { abort: false };
-                totalSteps = steps.length;
-                document.getElementById('totalSteps').textContent = totalSteps;
-                
-                for (const step of steps) {
-                    if (currentAnimation.abort) break;
-                    stepCount++;
-                    document.getElementById('currentStepNumber').textContent = stepCount;
-                    displayVisualization(step);
-                    await new Promise(resolve => setTimeout(resolve, getDelay()));
-                }
-            } catch (error) {
-                console.error('Error:', error);
-                const container = document.getElementById('visualizationContainer');
-                container.innerHTML = `<div class="error-message">Error: ${error.message}</div>`;
-            }
+            });
         }
         
-        function resetVisualization() {
-            if (currentAnimation) {
-                currentAnimation.abort = true;
-            }
-            
-            const algorithmId = '{{ algorithm_id }}';
-            if (algorithmId === 'divide-conquer/closest-pair') {
-                clearPoints();
-            } else if (algorithmId === 'divide-conquer/strassen') {
-                clearMatrices();
-            }
-            
-            document.getElementById('visualizationContainer').innerHTML = '';
-            document.getElementById('currentStep').textContent = '';
-            document.getElementById('currentStepNumber').textContent = '0';
-            document.getElementById('totalSteps').textContent = '0';
-            stepCount = 0;
-            totalSteps = 0;
+        state.steps = steps;
+        setupVisualization(container);
+        showStep();
+    } catch (error) {
+        console.error('Error:', error);
+        container.innerHTML = `<div class="error-message">Error: ${error.message}</div>`;
+    } finally {
+        state.isVisualizing = false;
+    }
+}
+        function setupVisualization(container) {
+            container.innerHTML = `
+                <div class="visualization-subcontainer">
+                    <div class="visualization-controls">
+                        <button id="prevButton" onclick="navigateStep(-1)">← Previous</button>
+                        <button id="playButton" onclick="toggleAnimation(this)">Play</button>
+                        <button id="nextButton" onclick="navigateStep(1)">Next →</button>
+                        <div class="step-counter" id="stepCounter">Step 0 of ${state.steps.length}</div>
+                    </div>
+                    <div id="stepDisplay"></div>
+                    <div id="explanationDisplay" class="step-explanation"></div>
+                </div>
+            `;
+            document.querySelector('.visualization-subcontainer').style.display = 'block';
         }
 
-        function displayBinarySearch(step, stepContent) {
-            const arrayContainer = document.createElement('div');
-            arrayContainer.className = 'array-container';
-            
-            step.array.forEach((num, index) => {
-                const element = document.createElement('div');
-                element.className = 'array-element';
-                element.textContent = num;
-                
-                if (index === step.mid) {
-                    element.classList.add('mid');
-                }
-                if (index === step.left) {
-                    element.classList.add('left');
-                }
-                if (index === step.right) {
-                    element.classList.add('right');
-                }
-                if (index === step.target_index) {
-                    element.classList.add('target');
-                }
-                
-                arrayContainer.appendChild(element);
-            });
-            
-            stepContent.appendChild(arrayContainer);
+        function navigateStep(delta) {
+            const newStep = state.currentStep + delta;
+            if (newStep >= 0 && newStep < state.steps.length) {
+                state.currentStep = newStep;
+                showStep();
+            }
         }
 
-        function displaySorting(step, stepContent) {
+        function toggleAnimation(playButton) {
+            if (state.animationInterval) {
+                clearInterval(state.animationInterval);
+                state.animationInterval = null;
+                playButton.textContent = 'Play';
+            } else {
+                playButton.textContent = 'Pause';
+                state.animationInterval = setInterval(() => {
+                    if (state.currentStep < state.steps.length - 1) {
+                        state.currentStep++;
+                        showStep();
+                    } else {
+                        clearInterval(state.animationInterval);
+                        state.animationInterval = null;
+                        playButton.textContent = 'Play';
+                    }
+                }, getDelay());
+            }
+        }
+
+       // Update showStep with better handling of undefined values
+function showStep() {
+    const step = state.steps[state.currentStep];
+    const stepDisplay = document.getElementById('stepDisplay');
+    const explanationDisplay = document.getElementById('explanationDisplay');
+    const stepCounter = document.getElementById('stepCounter');
+
+    stepCounter.textContent = `Step ${state.currentStep + 1} of ${state.steps.length}`;
+    stepDisplay.innerHTML = '';
+
+    if (state.currentStep === state.steps.length - 1 && state.algorithmId === 'divide-conquer/binary-search') {
+        const targetIndex = step.target_index !== undefined ? step.target_index : 'unknown';
+        explanationDisplay.textContent = targetIndex === -1 
+            ? "Target not found in the array"
+            : `Target ${state.target || 'unknown'} found at index ${targetIndex}`;
+    } else {
+        explanationDisplay.textContent = step.explanation || 'Processing step...';
+    }
+
+    const displayFunctions = {
+        'divide-conquer/binary-search': displayBinarySearch,
+        'divide-conquer/merge-sort': displaySorting,
+        'divide-conquer/quick-sort': displaySorting,
+        'divide-conquer/closest-pair': displayClosestPair,
+        'divide-conquer/karatsuba': displayKaratsuba,
+        'divide-conquer/strassen': displayStrassen
+    };
+
+    const displayFunc = displayFunctions[state.algorithmId] || (() => {
+        stepDisplay.innerHTML = '<div class="error-message">Visualization not implemented</div>';
+    });
+    displayFunc(step, stepDisplay);
+}
+
+// Update displayBinarySearch with validation and fallbacks
+function displayBinarySearch(step, container) {
+    const arrayContainer = document.createElement('div');
+    arrayContainer.className = 'sequence-display';
+    
+    const targetValue = state.target !== null ? state.target : (step.target !== undefined ? step.target : 'Unknown');
+    const targetDisplay = document.createElement('div');
+    targetDisplay.style.marginBottom = '10px';
+    targetDisplay.style.fontSize = '1.1em';
+    targetDisplay.textContent = `Searching for: ${targetValue}`;
+    container.appendChild(targetDisplay);
+
+    // Validate step data
+    const left = step.left !== undefined ? step.left : 0;
+    const right = step.right !== undefined ? step.right : (step.array ? step.array.length - 1 : 0);
+    const mid = step.mid !== undefined ? step.mid : Math.floor((left + right) / 2);
+    const targetIndex = step.target_index !== undefined ? step.target_index : -1;
+
+    if (!step.array || !Array.isArray(step.array)) {
+        container.innerHTML = '<div class="error-message">Invalid array data</div>';
+        console.error('Invalid array in step:', step);
+        return;
+    }
+
+    step.array.forEach((num, index) => {
+        const element = document.createElement('div');
+        element.className = 'sequence-item';
+        element.textContent = num;
+        
+        if (targetIndex !== -1 && index === targetIndex) {
+            element.classList.add('target');
+        }
+        if (index === mid) {
+            element.classList.add('current');
+        }
+        if (index === left) {
+            element.classList.add('left');
+        }
+        if (index === right) {
+            element.classList.add('right');
+        }
+        if (index < left || index > right) {
+            element.style.opacity = '0.3';
+        }
+        
+        arrayContainer.appendChild(element);
+    });
+    
+    container.appendChild(arrayContainer);
+
+    const stepInfo = document.createElement('div');
+    stepInfo.style.marginTop = '10px';
+    stepInfo.style.color = 'var(--text-secondary)';
+    
+    if (targetIndex !== undefined) {
+        stepInfo.textContent = targetIndex === -1 
+            ? 'Target not found in array'
+            : `Target found at index ${targetIndex}`;
+    } else {
+        stepInfo.textContent = `Checking range [${left}, ${right}], mid: ${mid}`;
+    }
+    
+    container.appendChild(stepInfo);
+}
+        function displaySorting(step, container) {
             const arrayContainer = document.createElement('div');
-            arrayContainer.className = 'array-container';
-            
+            arrayContainer.className = 'sequence-display';
             step.array.forEach((num, index) => {
                 const element = document.createElement('div');
-                element.className = 'array-element';
+                element.className = 'sequence-item';
                 element.textContent = num;
-                
                 if (step.comparing && step.comparing.includes(index)) {
-                    element.classList.add('comparing');
-                }
-                if (step.sorted && step.sorted.includes(index)) {
-                    element.classList.add('sorted');
-                }
-                if (step.pivot_index === index) {
+                    element.classList.add('current');
+                } else if (step.sorted && step.sorted.includes(index)) {
+                    element.classList.add('computed');
+                } else if (step.pivot_index === index) {
                     element.classList.add('pivot');
                 }
-                
                 arrayContainer.appendChild(element);
             });
-            
-            stepContent.appendChild(arrayContainer);
+            container.appendChild(arrayContainer);
         }
 
-        function displayKaratsuba(step, stepContent) {
-            const container = document.createElement('div');
-            container.className = 'karatsuba-step';
+        function displayClosestPair(step, container) {
+            const canvas = document.createElement('canvas');
+            canvas.width = 600;
+            canvas.height = 400;
+            const ctx = canvas.getContext('2d');
             
+            ctx.strokeStyle = '#eee';
+            ctx.lineWidth = 0.5;
+            for (let i = 0; i < canvas.width; i += 50) {
+                ctx.beginPath();
+                ctx.moveTo(i, 0);
+                ctx.lineTo(i, canvas.height);
+                ctx.stroke();
+            }
+            for (let i = 0; i < canvas.height; i += 50) {
+                ctx.beginPath();
+                ctx.moveTo(0, i);
+                ctx.lineTo(canvas.width, i);
+                ctx.stroke();
+            }
+            
+            step.points.forEach((point, index) => {
+                ctx.beginPath();
+                ctx.arc(point[0], point[1], 5, 0, 2 * Math.PI);
+                ctx.fillStyle = '#4CAF50';
+                ctx.fill();
+                ctx.strokeStyle = '#2E7D32';
+                ctx.stroke();
+                
+                ctx.fillStyle = '#000';
+                ctx.font = '12px Arial';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'bottom';
+                ctx.fillText(`P${index + 1}`, point[0], point[1] - 8);
+            });
+            
+            if (step.comparing) {
+                ctx.strokeStyle = '#FF5722';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(step.comparing[0][0], step.comparing[0][1]);
+                ctx.lineTo(step.comparing[1][0], step.comparing[1][1]);
+                ctx.stroke();
+                
+                step.comparing.forEach(point => {
+                    ctx.beginPath();
+                    ctx.arc(point[0], point[1], 7, 0, 2 * Math.PI);
+                    ctx.strokeStyle = '#FF5722';
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+                });
+                
+                if (step.distance) {
+                    ctx.fillStyle = '#000';
+                    ctx.font = '14px Arial';
+                    const midX = (step.comparing[0][0] + step.comparing[1][0]) / 2;
+                    const midY = (step.comparing[0][1] + step.comparing[1][1]) / 2;
+                    ctx.fillText(`Distance: ${step.distance.toFixed(2)}`, midX, midY - 10);
+                }
+            }
+            
+            if (step.divide_x !== undefined) {
+                ctx.beginPath();
+                ctx.strokeStyle = '#2196F3';
+                ctx.lineWidth = 1;
+                ctx.setLineDash([5, 5]);
+                ctx.moveTo(step.divide_x, 0);
+                ctx.lineTo(step.divide_x, canvas.height);
+                ctx.stroke();
+                ctx.setLineDash([]);
+            }
+            
+            if (step.strip_x !== undefined && step.strip_width !== undefined) {
+                ctx.fillStyle = 'rgba(33, 150, 243, 0.1)';
+                ctx.fillRect(
+                    step.strip_x - step.strip_width / 2,
+                    0,
+                    step.strip_width,
+                    canvas.height
+                );
+            }
+            
+            container.appendChild(canvas);
+        }
+
+        function displayKaratsuba(step, container) {
+            const karatsubaDiv = document.createElement('div');
+            karatsubaDiv.className = 'karatsuba-step';
             if (step.numbers) {
                 const numbersDiv = document.createElement('div');
                 numbersDiv.className = 'numbers';
@@ -957,29 +1144,25 @@ C22 = P5 + P1 - P3 - P7</pre>
                     <div>X = ${step.numbers.x}</div>
                     <div>Y = ${step.numbers.y}</div>
                 `;
-                container.appendChild(numbersDiv);
+                karatsubaDiv.appendChild(numbersDiv);
             }
-            
             if (step.calculation) {
                 const calcDiv = document.createElement('div');
                 calcDiv.className = 'calculation';
                 calcDiv.innerHTML = step.calculation;
-                container.appendChild(calcDiv);
+                karatsubaDiv.appendChild(calcDiv);
             }
-            
-            stepContent.appendChild(container);
+            container.appendChild(karatsubaDiv);
         }
 
-        function displayStrassen(step, stepContent) {
-            const container = document.createElement('div');
-            container.className = 'strassen-step';
-            
+        function displayStrassen(step, container) {
+            const strassenDiv = document.createElement('div');
+            strassenDiv.className = 'strassen-step';
             ['A', 'B', 'Result'].forEach(matrixName => {
                 if (step[matrixName.toLowerCase()]) {
                     const matrixDiv = document.createElement('div');
                     matrixDiv.className = 'matrix';
                     matrixDiv.innerHTML = `<h4>Matrix ${matrixName}</h4>`;
-                    
                     const table = document.createElement('table');
                     step[matrixName.toLowerCase()].forEach(row => {
                         const tr = document.createElement('tr');
@@ -990,13 +1173,34 @@ C22 = P5 + P1 - P3 - P7</pre>
                         });
                         table.appendChild(tr);
                     });
-                    
                     matrixDiv.appendChild(table);
-                    container.appendChild(matrixDiv);
+                    strassenDiv.appendChild(matrixDiv);
                 }
             });
-            
-            stepContent.appendChild(container);
+            container.appendChild(strassenDiv);
+        }
+
+        function resetVisualization() {
+            state.reset();
+            const container = document.getElementById('visualizationContainer');
+            container.innerHTML = `
+                <div class="visualization-subcontainer">
+                    <div class="visualization-controls">
+                        <button id="prevButton" onclick="navigateStep(-1)">← Previous</button>
+                        <button id="playButton" onclick="toggleAnimation(this)">Play</button>
+                        <button id="nextButton" onclick="navigateStep(1)">Next →</button>
+                        <div class="step-counter" id="stepCounter">Step 0 of 0</div>
+                    </div>
+                    <div id="stepDisplay"></div>
+                    <div id="explanationDisplay" class="step-explanation"></div>
+                </div>
+            `;
+            document.querySelector('.visualization-subcontainer').style.display = 'none';
+            if (state.algorithmId === 'divide-conquer/closest-pair') {
+                clearPoints();
+            } else if (state.algorithmId === 'divide-conquer/strassen') {
+                clearMatrices();
+            }
         }
 
         function generateRandomNumbers() {
@@ -1009,7 +1213,7 @@ C22 = P5 + P1 - P3 - P7</pre>
             const size = prompt('Enter matrix size (must be a power of 2):', '4');
             if (size) {
                 const n = parseInt(size);
-                if (n && (n & (n - 1)) === 0) { // Check if power of 2
+                if (n && (n & (n - 1)) === 0) {
                     matrixSize = n;
                     clearMatrices();
                     initializeMatrices();
@@ -1038,11 +1242,9 @@ C22 = P5 + P1 - P3 - P7</pre>
         function initializeMatrices() {
             const matrixADiv = document.querySelector('#matrixA .matrix-grid');
             const matrixBDiv = document.querySelector('#matrixB .matrix-grid');
-            
             [matrixADiv, matrixBDiv].forEach((div, matrixIndex) => {
                 div.innerHTML = '';
                 div.style.gridTemplate = `repeat(${matrixSize}, 1fr) / repeat(${matrixSize}, 1fr)`;
-                
                 for (let i = 0; i < matrixSize; i++) {
                     for (let j = 0; j < matrixSize; j++) {
                         const input = document.createElement('input');
@@ -1063,13 +1265,11 @@ C22 = P5 + P1 - P3 - P7</pre>
         function displayMatrices() {
             const matrixAInputs = document.querySelectorAll('#matrixA .matrix-grid input');
             const matrixBInputs = document.querySelectorAll('#matrixB .matrix-grid input');
-            
             matrixAInputs.forEach(input => {
                 const i = parseInt(input.dataset.row);
                 const j = parseInt(input.dataset.col);
                 input.value = matrixA[i][j];
             });
-            
             matrixBInputs.forEach(input => {
                 const i = parseInt(input.dataset.row);
                 const j = parseInt(input.dataset.col);

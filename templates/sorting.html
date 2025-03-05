@@ -3,248 +3,376 @@
 <head>
     <title>{{ algorithm_name }} - Algorithm Visualizer</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    <style>
-        :root {
-            --primary-color: #2196F3;
-            --secondary-color: #1976D2;
-            --success-color: #4CAF50;
-            --comparing-color: #FFC107;
-            --sorted-color: #4CAF50;
-            --text-color: #333;
-            --bg-color: #f5f5f5;
-            --card-bg: #ffffff;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    <style>:root {
+        --primary-color:black;
+        --primary-dark: black;
+        --primary-light: black;
+        --secondary-color: #4caf50;
+        --text-primary: #212121;
+        --text-secondary: #757575;
+        --background-light: #fafafa;
+        --shadow-sm: 0 2px 4px rgba(0,0,0,0.1);
+        --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
+        --border-radius: 8px;
+    }
+    
+    body {
+            font-family: 'Roboto', sans-serif;
             line-height: 1.6;
+            color: var(--text-primary);
+            background: #f8f9fa;
             margin: 0;
-            padding: 0;
-            background-color: var(--bg-color);
-            color: var(--text-color);
+            padding: 20px;
         }
 
-        .header {
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-            color: white;
-            padding: 2rem;
+    
+    .header {
+            margin-left: 145px;
             text-align: center;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-
-        .back-button {
-            color: white;
-            text-decoration: none;
-            font-weight: 500;
-            display: inline-block;
-            margin-bottom: 1rem;
-            transition: opacity 0.3s;
-        }
-
-        .back-button:hover {
-            opacity: 0.8;
-        }
-
-        .visualization-container {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-sm);
             max-width: 1200px;
-            margin: 2rem auto;
-            padding: 0 1rem;
         }
-
-        .control-panel {
-            background: var(--card-bg);
-            padding: 1.5rem;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            margin-bottom: 2rem;
-        }
-
-        .controls-wrapper {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 1rem;
-            align-items: center;
-        }
-
+    
+    .back-button {
+        text-decoration: none;
+        color: var(--primary-color);
+        font-weight: 500;
+        display: inline-block;
+        margin: 0; /* Remove margin for exact positioning */
+        transition: color 0.3s;
+        position: absolute;
+        top: 10px; /* Match reference vertical positioning */
+        left: 20px; /* Match reference horizontal positioning */
+        font-size: 0.9em; /* Match reference font size */
+        line-height: 1; /* Tighten line height for compactness */
+    }
+    
+    .back-button:hover {
+        color: var(--primary-dark);
+    }
+    
+    .header-content {
+        display: inline-block; /* Centers content while allowing back-button positioning */
+        vertical-align: middle;
+    }
+    
+    .header h1 {
+        color: var(--text-primary); /* Black text as requested */
+        margin: 0 0 5px 0;
+        font-size: 2em; /* Match reference title size */
+        font-weight: bold; /* Ensure bold as in reference */
+        line-height: 1.2; /* Tight line height for compactness */
+    }
+    
+    .subtitle {
+        color: var(--text-secondary); /* Gray text as in reference */
+        margin: 0;
+        font-size: 1em; /* Match reference subtitle size */
+        font-weight: normal; /* Ensure not bold, matching reference */
+        line-height: 1.4; /* Slightly tighter for compactness */
+    }
+    
+    /* Ensure other elements remain unaffected */
+    .visualization-container {
+        /* max-width: 1200px; */
+        margin: 0 auto;
+        width: 1250px;
+    }
+    
+    .control-panel {
+        background: white;
+        padding: 15px;
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow-sm);
+        margin-bottom: 15px;
+    }
+    
+    .controls-wrapper {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .input-group {
+        display: flex;
+        gap: 5px;
+        flex-wrap: wrap;
+    }
+    
+    input[type="text"] {
+        padding: 8px 12px;
+        border: 2px solid #e0e0e0;
+        border-radius: 4px;
+        font-size: 14px;
+        flex: 1;
+        min-width: 200px;
+        transition: border-color 0.3s;
+    }
+    
+    input[type="text"]:focus {
+        border-color: var(--primary-color);
+        outline: none;
+    }
+    
+    button {
+        background: var(--primary-color);
+        color: white;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: 500;
+        transition: background-color 0.3s;
+        margin-right: 5px;
+    }
+    
+    button:hover {
+        background: var(--primary-dark);
+    }
+    
+    .speed-control {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        margin-top: 10px;
+    }
+    
+    .speed-control label {
+        color: var(--text-secondary);
+        font-weight: 500;
+    }
+    
+    input[type="range"] {
+        flex: 1;
+        max-width: 150px;
+    }
+    
+    .visualization-area {
+        margin-bottom: 15px;
+    }
+    
+    .array-container {
+        display: flex;
+        justify-content: center;
+        gap: 5px;
+        padding: 15px;
+        background: white;
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow-sm);
+        min-height: 200px;
+        flex-wrap: wrap;
+    }
+    
+    .array-element {
+        width: 40px;
+        background: var(--primary-light);
+        border-radius: 4px;
+        font-weight: bold;
+        color: white;
+        transition: all 0.3s;
+        display: flex;
+        align-items: flex-end;
+        justify-content: center;
+        padding-bottom: 5px;
+    }
+    
+    .array-element.comparing {
+        background: #fff3e0;
+        color: #f57c00;
+        transform: translateY(-5px);
+        box-shadow: var(--shadow-sm);
+    }
+    
+    .array-element.sorted {
+        background: #e8f5e9;
+        color: var(--secondary-color);
+        transform: scale(1.05);
+        box-shadow: var(--shadow-sm);
+    }
+    
+    .info-panel {
+        background: white;
+        padding: 15px;
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow-sm);
+        margin-top: 15px;
+    }
+    
+    .complexity {
+        display: flex;
+        gap: 15px;
+        margin-bottom: 15px;
+        flex-wrap: wrap;
+    }
+    
+    .complexity-item {
+        flex: 1;
+        text-align: center;
+        padding: 10px;
+        background: var(--primary-light);
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow-sm);
+        min-width: 200px;
+    }
+    
+    .complexity-item .label {
+        font-weight: bold;
+        color: white;
+        display: block;
+        margin-bottom: 5px;
+        font-size: 0.9em;
+        text-transform: uppercase;
+    }
+    
+    .complexity-item .value {
+        font-family: 'Courier New', monospace;
+        font-size: 1.1em;
+        color: white;
+    }
+    
+    .steps-panel {
+        background: white;
+        padding: 15px;
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow-sm);
+        max-height: 250px;
+        overflow-y: auto;
+        margin-top: 15px;
+    }
+    
+    .steps-panel h3 {
+        color: white;
+        margin: 0 0 10px 0;
+        font-size: 1.3em;
+    }
+    
+    .current-step {
+        padding: 10px;
+        margin-bottom: 10px;
+        background: var(--primary-light);
+        border-radius: var(--border-radius);
+        border-left: 3px solid var(--primary-color);
+        color: white
+    }
+    
+    .step-number {
+        font-weight: bold;
+        color: var(--primary-color);
+        margin-top: 5px;
+        font-size: 0.9em;
+    }
+    
+    .steps-log {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+    }
+    
+    .step-entry {
+        padding: 8px;
+        background: var(--background-light);
+        border-radius: var(--border-radius);
+        border-left: 3px solid #e0e0e0;
+        transition: all 0.3s;
+        font-size: 0.9em;
+    }
+    
+    .step-entry:hover {
+        transform: translateX(5px);
+        border-left-color: var(--primary-color);
+    }
+    
+    /* Scrollbar styling */
+    ::-webkit-scrollbar {
+        width: 8px;
+    }
+    
+    ::-webkit-scrollbar-track {
+        background: var(--background-light);
+        border-radius: 4px;
+    }
+    
+    ::-webkit-scrollbar-thumb {
+        background: var(--primary-color);
+        border-radius: 4px;
+    }
+    
+    ::-webkit-scrollbar-thumb:hover {
+        background: var(--primary-dark);
+    }
+    
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
         .input-group {
-            flex: 1;
-            display: flex;
-            gap: 0.5rem;
+            flex-direction: column;
         }
-
-        input[type="text"] {
-            flex: 1;
-            padding: 0.75rem;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-size: 1rem;
+    
+        .controls-wrapper {
+            flex-direction: column;
+            align-items: flex-start;
         }
-
-        button {
-            padding: 0.75rem 1.5rem;
-            background-color: var(--primary-color);
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-
-        button:hover {
-            background-color: var(--secondary-color);
-        }
-
-        .speed-control {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-
-        input[type="range"] {
-            width: 150px;
-        }
-
-        .visualization-area {
-            display: grid;
-            grid-template-columns: 2fr 1fr;
-            gap: 2rem;
-        }
-
-        .array-container {
-            background: var(--card-bg);
-            padding: 2rem;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            display: flex;
-            align-items: flex-end;
-            justify-content: center;
-            min-height: 300px;
-            gap: 4px;
-        }
-
-        .array-element {
-            background-color: var(--primary-color);
-            color: white;
-            text-align: center;
-            padding: 0.5rem;
-            min-width: 40px;
-            border-radius: 4px 4px 0 0;
-            transition: all 0.3s ease;
-        }
-
-        .array-element.comparing {
-            background-color: var(--comparing-color);
-            transform: translateY(-10px);
-        }
-
-        .array-element.sorted {
-            background-color: var(--sorted-color);
-        }
-
-        .info-panel {
-            background: var(--card-bg);
-            padding: 1.5rem;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-
+    
         .complexity {
-            display: flex;
-            gap: 2rem;
-            margin-bottom: 1.5rem;
-            padding-bottom: 1rem;
-            border-bottom: 1px solid #eee;
+            flex-direction: column;
         }
-
-        .complexity-item {
-            flex: 1;
+    
+        .array-element {
+            width: 30px;
+            font-size: 0.8em;
         }
-
-        .complexity-item .label {
-            font-weight: 500;
-            color: #666;
+    
+        .header h1 {
+            font-size: 1.5em;
         }
-
-        .complexity-item .value {
-            font-size: 1.1rem;
-            color: var(--primary-color);
+    
+        .subtitle {
+            font-size: 0.9em;
         }
-
+    
+        .back-button {
+            position: static; /* Remove absolute positioning on smaller screens */
+            text-align: left;
+            margin-bottom: 5px;
+            font-size: 0.9em;
+        }
+    }
+    
+    @media (max-width: 480px) {
+        body {
+            padding: 10px;
+        }
+    
+        .control-panel {
+            padding: 10px;
+        }
+    
+        .array-container {
+            padding: 10px;
+        }
+    
         .steps-panel {
-            background: var(--card-bg);
-            padding: 1.5rem;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            margin: 2rem 0;
+            padding: 10px;
         }
-
-        .current-step {
-            background: #f8f9fa;
-            padding: 1rem;
-            border-radius: 4px;
-            margin-bottom: 1rem;
-            border-left: 4px solid var(--primary-color);
-        }
-
-        .steps-log {
-            max-height: 200px;
-            overflow-y: auto;
-            border: 1px solid #eee;
-            border-radius: 4px;
-            padding: 0.5rem;
-        }
-
-        .step-entry {
-            padding: 0.75rem;
-            border-bottom: 1px solid #eee;
-            transition: background-color 0.3s;
-        }
-
-        .step-entry:hover {
-            background-color: #f8f9fa;
-        }
-
-        .algorithm-explanation {
-            margin-top: 2rem;
-            padding: 1.5rem;
-            background: var(--card-bg);
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-
-        .algorithm-explanation h3 {
-            color: var(--primary-color);
-            margin-top: 0;
-        }
-
-        .explanation-step {
-            margin: 1rem 0;
-            padding: 1rem;
-            background: #f8f9fa;
-            border-radius: 4px;
-            border-left: 4px solid var(--primary-color);
-        }
-
-        @media (max-width: 768px) {
-            .visualization-area {
-                grid-template-columns: 1fr;
-            }
-            
-            .controls-wrapper {
-                flex-direction: column;
-            }
-            
-            .input-group {
-                flex-direction: column;
-            }
-        }
+    }
+    .step-controls {
+        display: none;
+    }
+    .step-controls.visible {
+        display: flex;
+    }
     </style>
 </head>
 <body>
     <div class="header">
         <a href="/" class="back-button">← Back to Algorithms</a>
-        <h1>{{ algorithm_name }}</h1>
-        <p class="subtitle">{{ algorithm_description }}</p>
+        <div class="header-content">
+            <h1>{{ algorithm_name }}</h1>
+            <p class="subtitle">{{ algorithm_description }}</p>
+        </div>
     </div>
 
     <div class="visualization-container">
@@ -256,8 +384,13 @@
                     <button onclick="generateRandomArray()">Random Array</button>
                     <button onclick="resetVisualization()">Reset</button>
                 </div>
+                <div class="step-controls" id="stepControls">
+                    <button onclick="previousStep()">← Previous</button>
+                    <button id="playPauseButton" onclick="playPause()">Play</button>
+                    <button onclick="nextStep()">Next →</button>
+                </div>
                 <div class="speed-control">
-                    <label for="speed">Speed:</label>
+                    <label for="speed">Animation Speed:</label>
                     <input type="range" id="speed" min="1" max="5" value="3">
                 </div>
             </div>
@@ -266,16 +399,25 @@
         <div class="visualization-area">
             <div class="array-container" id="arrayContainer"></div>
             <div class="info-panel">
-                <div class="complexity">
-                    <div class="complexity-item">
-                        <span class="label">Time Complexity:</span>
-                        <span class="value">{{ time_complexity }}</span>
+                <div class="steps-panel">
+                    <h3>Current Operation</h3>
+                    <div id="currentStep" class="current-step">
+                        <p id="stepDescription">Click 'Sort' to start visualization</p>
+                        <p id="stepNumber" class="step-number">Step: 0/0</p>
                     </div>
-                    <div class="complexity-item">
-                        <span class="label">Space Complexity:</span>
-                        <span class="value">{{ space_complexity }}</span>
-                    </div>
+                    <div id="stepsLog" class="steps-log"></div>
                 </div>
+            </div>
+            <div class="complexity">
+                <div class="complexity-item">
+                    <span class="label">Time Complexity:</span>
+                    <span class="value">{{ time_complexity }}</span>
+                </div>
+                <div class="complexity-item">
+                    <span class="label">Space Complexity:</span>
+                    <span class="value">{{ space_complexity }}</span>
+                </div>
+            </div>
                 <div class="explanation">
                     <h3>How it Works</h3>
                     <div class="explanation-step">
@@ -318,35 +460,29 @@
             </div>
         </div>
 
-        <div class="steps-panel">
-            <h3>Current Operation</h3>
-            <div id="currentStep" class="current-step">
-                <p id="stepDescription">Click 'Sort' to start visualization</p>
-                <p id="stepNumber" class="step-number">Step: 0/0</p>
-            </div>
-            <div id="stepsLog" class="steps-log"></div>
-        </div>
-    </div>
 
     <script>
         let currentAnimation = null;
+        let isPlaying = false;
+        let currentStepIndex = 0;
+        let steps = [];
         const speedControl = document.getElementById('speed');
-        
+
         function getDelay() {
             return 600 / speedControl.value;
         }
-        
+
         function generateRandomArray() {
             const size = Math.floor(Math.random() * 5) + 5; // 5-10 elements
             const array = Array.from({length: size}, () => Math.floor(Math.random() * 50) + 1);
             document.getElementById('arrayInput').value = array.join(',');
             displayArray(array);
         }
-        
+
         function displayArray(array, comparing = [], sorted = []) {
             const container = document.getElementById('arrayContainer');
             container.innerHTML = '';
-            
+
             array.forEach((num, idx) => {
                 const element = document.createElement('div');
                 element.className = 'array-element';
@@ -357,62 +493,90 @@
                 container.appendChild(element);
             });
         }
-        
+
         async function visualizeSort(algorithmId) {
             if (currentAnimation) {
                 currentAnimation.abort = true;
             }
-            
+
             const input = document.getElementById('arrayInput').value;
             const array = input.split(',').map(Number);
-            
+
             if (array.some(isNaN)) {
                 alert('Please enter valid numbers');
                 return;
             }
-            
+
             // Reset steps log
             const stepsLog = document.getElementById('stepsLog');
             stepsLog.innerHTML = '';
-            
+
             const response = await fetch(`/api/${algorithmId}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ array })
             });
-            
-            const { steps } = await response.json();
+
+            const data = await response.json();
+            steps = data.steps;
+            currentStepIndex = 0;
+            isPlaying = false;
             currentAnimation = { abort: false };
-            
-            for (let i = 0; i < steps.length; i++) {
-                if (currentAnimation.abort) break;
-                
-                const step = steps[i];
-                displayArray(
-                    step.array,
-                    step.comparing,
-                    step.sorted || []
-                );
-                
-                // Update current step description
-                document.getElementById('stepDescription').textContent = step.description || 'Processing...';
-                document.getElementById('stepNumber').textContent = `Step: ${i + 1}/${steps.length}`;
-                
-                // Add step to log
-                const stepEntry = document.createElement('div');
-                stepEntry.className = 'step-entry';
-                stepEntry.textContent = `Step ${i + 1}: ${step.description || 'Processing...'}`;
-                stepsLog.insertBefore(stepEntry, stepsLog.firstChild);
-                
-                await new Promise(resolve => setTimeout(resolve, getDelay()));
-            }
-            
-            if (!currentAnimation.abort) {
-                displayArray(steps[steps.length - 1].array, [], Array.from(array.keys()));
-                document.getElementById('stepDescription').textContent = 'Sorting completed!';
+
+            displayStep(currentStepIndex);
+
+            // Make step controls visible
+            document.getElementById('stepControls').classList.add('visible');
+        }
+
+        function displayStep(index) {
+            const step = steps[index];
+            displayArray(step.array, step.comparing, step.sorted || []);
+
+            // Update current step description
+            document.getElementById('stepDescription').textContent = step.description || 'Processing...';
+            document.getElementById('stepNumber').textContent = `Step: ${index + 1}/${steps.length}`;
+
+            // Add step to log
+            const stepsLog = document.getElementById('stepsLog');
+            const stepEntry = document.createElement('div');
+            stepEntry.className = 'step-entry';
+            stepEntry.textContent = `Step ${index + 1}: ${step.description || 'Processing...'}`;
+            stepsLog.insertBefore(stepEntry, stepsLog.firstChild);
+        }
+
+        function nextStep() {
+            if (currentStepIndex < steps.length - 1) {
+                currentStepIndex++;
+                displayStep(currentStepIndex);
             }
         }
-        
+
+        function previousStep() {
+            if (currentStepIndex > 0) {
+                currentStepIndex--;
+                displayStep(currentStepIndex);
+            }
+        }
+
+        function playPause() {
+            isPlaying = !isPlaying;
+            const playPauseButton = document.getElementById('playPauseButton');
+            playPauseButton.textContent = isPlaying ? 'Pause' : 'Play';
+            if (isPlaying) {
+                playSteps();
+            }
+        }
+
+        async function playSteps() {
+            while (isPlaying && currentStepIndex < steps.length - 1) {
+                nextStep();
+                await new Promise(resolve => setTimeout(resolve, getDelay()));
+            }
+            isPlaying = false;
+            document.getElementById('playPauseButton').textContent = 'Play';
+        }
+
         function resetVisualization() {
             if (currentAnimation) {
                 currentAnimation.abort = true;
@@ -422,10 +586,15 @@
             document.getElementById('stepDescription').textContent = 'Click \'Sort\' to start visualization';
             document.getElementById('stepNumber').textContent = 'Step: 0/0';
             document.getElementById('stepsLog').innerHTML = '';
+            steps = [];
+            currentStepIndex = 0;
+            isPlaying = false;
+            document.getElementById('playPauseButton').textContent = 'Play';
+            document.getElementById('stepControls').classList.remove('visible');
         }
-        
+
         // Initialize with random array
         generateRandomArray();
     </script>
 </body>
-</html> 
+</html>

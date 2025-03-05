@@ -7,7 +7,9 @@ def binary_search_dc(arr, target, left, right):
             "array": arr,
             "left": left,
             "right": right,
-            "found": False
+            "mid": None,
+            "target_index": -1,
+            "explanation": "Target not found"
         })
         return steps
     
@@ -17,14 +19,18 @@ def binary_search_dc(arr, target, left, right):
         "left": left,
         "right": right,
         "mid": mid,
-        "comparing": arr[mid]
+        "comparing": arr[mid],
+        "explanation": f"Comparing target {target} with middle element {arr[mid]}"
     })
     
     if arr[mid] == target:
         steps.append({
             "array": arr,
-            "found": True,
-            "index": mid
+            "left": left,
+            "right": right,
+            "mid": mid,
+            "target_index": mid,
+            "explanation": f"Target {target} found at index {mid}"
         })
     elif arr[mid] > target:
         steps.extend(binary_search_dc(arr, target, left, mid - 1))
@@ -44,7 +50,8 @@ def merge_sort_dc(arr, left, right):
             "left": left,
             "right": right,
             "mid": mid,
-            "dividing": True
+            "dividing": True,
+            "explanation": f"Dividing array at index {mid}"
         })
         
         steps.extend(merge_sort_dc(arr, left, mid))
@@ -58,7 +65,8 @@ def merge_sort_dc(arr, left, right):
         while i <= mid and j <= right:
             steps.append({
                 "array": arr[:],
-                "comparing": (i, j)
+                "comparing": (i, j),
+                "explanation": f"Comparing elements {arr[i]} and {arr[j]}"
             })
             
             if arr[i] <= arr[j]:
@@ -81,7 +89,8 @@ def merge_sort_dc(arr, left, right):
             arr[left + i] = temp[i]
             steps.append({
                 "array": arr[:],
-                "merged": (left + i,)
+                "merged": (left + i,),
+                "explanation": f"Placing element {temp[i]} at index {left + i}"
             })
     
     return steps
@@ -97,13 +106,15 @@ def quick_sort_dc(arr, low, high):
         steps.append({
             "array": arr[:],
             "pivot_index": high,
-            "pivot": pivot
+            "pivot": pivot,
+            "explanation": f"Choosing pivot element {pivot} at index {high}"
         })
         
         for j in range(low, high):
             steps.append({
                 "array": arr[:],
-                "comparing": (j, high)
+                "comparing": (j, high),
+                "explanation": f"Comparing element {arr[j]} with pivot {pivot}"
             })
             
             if arr[j] <= pivot:
@@ -111,13 +122,15 @@ def quick_sort_dc(arr, low, high):
                 arr[i], arr[j] = arr[j], arr[i]
                 steps.append({
                     "array": arr[:],
-                    "swapped": (i, j)
+                    "swapped": (i, j),
+                    "explanation": f"Swapping elements {arr[i]} and {arr[j]}"
                 })
         
         arr[i + 1], arr[high] = arr[high], arr[i + 1]
         steps.append({
             "array": arr[:],
-            "partition": i + 1
+            "partition": i + 1,
+            "explanation": f"Placing pivot element {pivot} at index {i + 1}"
         })
         
         return i + 1
@@ -147,7 +160,8 @@ def closest_pair(points):
                 steps.append({
                     "points": points,
                     "comparing": (strip[i], strip[j]),
-                    "distance": dist
+                    "distance": dist,
+                    "explanation": f"Comparing points {strip[i]} and {strip[j]} with distance {dist:.2f}"
                 })
                 
                 if dist < min_dist:
@@ -171,7 +185,8 @@ def closest_pair(points):
                     steps.append({
                         "points": points,
                         "comparing": (points_x[i], points_x[j]),
-                        "distance": dist
+                        "distance": dist,
+                        "explanation": f"Comparing points {points_x[i]} and {points_x[j]} with distance {dist:.2f}"
                     })
                     
                     if dist < min_dist:
@@ -189,7 +204,8 @@ def closest_pair(points):
         steps.append({
             "points": points,
             "mid_point": mid_point,
-            "dividing": True
+            "dividing": True,
+            "explanation": f"Dividing points at {mid_point}"
         })
         
         d1, pair1, steps1 = closest_util(points_x[:mid], points_yl)
@@ -227,7 +243,8 @@ def karatsuba(x, y):
                 "y": y,
                 "result": x * y,
                 "depth": depth,
-                "base_case": True
+                "base_case": True,
+                "explanation": f"Base case multiplication: {x} * {y} = {x * y}"
             })
             return x * y
         
@@ -248,7 +265,8 @@ def karatsuba(x, y):
                 "a": a, "b": b,
                 "c": c, "d": d
             },
-            "depth": depth
+            "depth": depth,
+            "explanation": f"Splitting numbers: {x} -> ({a}, {b}), {y} -> ({c}, {d})"
         })
         
         # Recursive steps
@@ -266,7 +284,8 @@ def karatsuba(x, y):
             "bd": bd,
             "ad_plus_bc": ad_plus_bc,
             "result": result,
-            "depth": depth
+            "depth": depth,
+            "explanation": f"Combining results: {ac} * 10^{2 * m} + {ad_plus_bc} * 10^{m} + {bd} = {result}"
         })
         
         return result
@@ -275,55 +294,7 @@ def karatsuba(x, y):
     return steps
 
 def strassen_matrix_multiply(A, B):
-    """Strassen's matrix multiplication algorithm using divide and conquer.
-    
-    How it works:
-    1. Base Case:
-       - For 2x2 matrices, perform direct multiplication
-       - This is more efficient than further subdivision for small matrices
-    
-    2. Matrix Division:
-       - Split each input matrix into four equal quarters:
-         Matrix A:         Matrix B:
-         [A11  A12]       [B11  B12]
-         [A21  A22]       [B21  B22]
-    
-    3. Seven Products (Key to Strassen's Optimization):
-       Instead of 8 multiplications in standard matrix multiplication,
-       Strassen's uses 7 products:
-       P1 = A11 × (B12 - B22)
-       P2 = (A11 + A12) × B22
-       P3 = (A21 + A22) × B11
-       P4 = A22 × (B21 - B11)
-       P5 = (A11 + A22) × (B11 + B22)
-       P6 = (A12 - A22) × (B21 + B22)
-       P7 = (A11 - A21) × (B11 + B12)
-    
-    4. Result Calculation:
-       The four quarters of the result matrix C are:
-       C11 = P5 + P4 - P2 + P6
-       C12 = P1 + P2
-       C21 = P3 + P4
-       C22 = P5 + P1 - P3 - P7
-    
-    5. Complexity Analysis:
-       - Time Complexity: O(n^log_2(7)) ≈ O(n^2.807)
-       - Space Complexity: O(n^2)
-       - Improves upon standard matrix multiplication O(n^3)
-       - Most effective for large matrices
-    
-    Args:
-        A (List[List[int]]): First input matrix
-        B (List[List[int]]): Second input matrix
-    
-    Returns:
-        List[Dict]: List of steps showing the algorithm's progress
-        Each step contains:
-        - Current operation being performed
-        - Intermediate calculations
-        - Depth of recursion
-        - Explanatory text
-    """
+    """Strassen's matrix multiplication algorithm using divide and conquer."""
     steps = []
     n = len(A)
     
@@ -500,4 +471,4 @@ def strassen_matrix_multiply(A, B):
         return result
     
     result = strassen_recursive(A, B)
-    return steps 
+    return steps

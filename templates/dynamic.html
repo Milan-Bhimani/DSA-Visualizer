@@ -6,111 +6,401 @@
     <title>{{ algorithm_name | safe }} - Algorithm Visualizer</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 20px;
-            background: #f0f2f5;
-        }
+:root {
+    --primary-color:black;
+    --primary-dark: black;
+    --primary-light: black;
+    --secondary-color: #4caf50;
+    --text-primary: #212121;
+    --text-secondary: #757575;
+    --background-light: #fafafa;
+    --shadow-sm: 0 2px 4px rgba(0,0,0,0.1);
+    --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
+    --border-radius: 8px;
+}
 
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
+body {
+    font-family: 'Roboto', sans-serif;
+    line-height: 1.6;
+    color: var(--text-primary);
+    background: #f8f9fa;
+    margin: 0;
+    padding: 20px;
+}
 
-        .dp-grid {
-            display: grid;
-            gap: 2px;
-            margin: 20px auto;
-            background: #f5f6fa;
-            padding: 10px;
-            border-radius: 8px;
-        }
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
 
-        .dp-cell {
-            width: 50px;
-            height: 50px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: white;
-            border: 1px solid #dcdde1;
-            transition: all 0.3s ease;
-            font-size: 16px;
-        }
+.header {
+    text-align: center;
+    margin-bottom: 20px;
+    padding: 10px 20px;
+    background: white;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-sm);
+    position: relative;
+    border-top: none;
+    min-height: 80px;
+}
 
-        .dp-cell.current { background-color: #3498db; color: white; }
-        .dp-cell.computed { background-color: #2ecc71; color: white; }
-        .dp-cell.optimal { background-color: #f1c40f; color: white; }
+.back-button {
+    text-decoration: none;
+    color: var(--primary-color);
+    font-weight: 500;
+    display: inline-block;
+    margin: 0;
+    transition: color 0.3s;
+    position: absolute;
+    top: 10px;
+    left: 20px;
+    font-size: 0.9em;
+    line-height: 1;
+}
 
-        .sequence-display {
-            margin: 20px 0;
-            padding: 15px;
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
+.back-button:hover {
+    color: var(--primary-dark);
+}
 
-        .sequence-item {
-            display: inline-block;
-            padding: 8px 12px;
-            margin: 4px;
-            background: #f5f6fa;
-            border-radius: 4px;
-            transition: all 0.3s ease;
-        }
+.header h1 {
+    color: var(--text-primary);
+    margin: 0 0 5px 0;
+    font-size: 2em;
+    font-weight: bold;
+    line-height: 1.2;
+}
 
-        .sequence-item.current { background: #3498db; color: white; }
-        .sequence-item.computed { background: #2ecc71; color: white; }
+.subtitle {
+    color: var(--text-secondary);
+    margin: 0;
+    font-size: 1em;
+    font-weight: normal;
+    line-height: 1.4;
+}
 
-        .step-explanation {
-            padding: 10px;
-            background: #f8f9fa;
-            border-radius: 5px;
-            margin-top: 10px;
-        }
+.controls {
+    background: white;
+    padding: 15px;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 15px;
+}
 
-        .loading {
-            text-align: center;
-            padding: 20px;
-            color: #666;
-        }
+.input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    margin-bottom: 10px;
+}
 
-        .input-group select, .input-group input {
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            font-size: 16px;
-            margin: 5px;
-        }
+.input-group label {
+    color: var(--text-primary);
+    font-weight: 500;
+    margin-bottom: 5px;
+}
 
-        .primary-button, .visualization-controls button {
-            padding: 12px 20px;
-            background: #3498db;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background 0.3s ease;
-        }
+.input-row {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+}
 
-        .primary-button:hover, .visualization-controls button:hover {
-            background: #2980b9;
-        }
+input[type="number"],
+input[type="text"] {
+    padding: 8px 12px;
+    border: 2px solid #e0e0e0;
+    border-radius: 4px;
+    font-size: 14px;
+    width: 100%;
+    max-width: 200px;
+    transition: border-color 0.3s;
+}
 
-        .secondary-button {
-            padding: 12px 20px;
-            background: #95a5a6;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background 0.3s ease;
-        }
+input[type="number"]:focus,
+input[type="text"]:focus {
+    border-color: var(--primary-color);
+    outline: none;
+}
 
-        .secondary-button:hover {
-            background: #7f8c8d;
-        }
+.speed-control {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-bottom: 10px; /* Reduced margin for compactness */
+}
+
+.speed-control label {
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+input[type="range"] {
+    flex: 1;
+    max-width: 150px;
+}
+
+#speedLabel {
+    color: var(--text-secondary);
+    font-size: 0.9em;
+    margin-left: 5px; /* Tighter spacing with label */
+}
+
+.button-container {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 10px; /* Reduced margin for compactness */
+}
+
+.primary-button {
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background-color 0.3s;
+}
+
+.primary-button:hover {
+    background: var(--primary-dark);
+}
+
+.secondary-button {
+    background: var(--primary-light);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.secondary-button:hover {
+    background: var(--primary-dark);
+    color: white;
+}
+
+.visualization-area {
+    margin-bottom: 15px;
+}
+
+#visualizationContainer {
+    background: white;
+    padding: 15px;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-sm);
+    min-height: 200px;
+    overflow-y: auto;
+}
+
+.how-it-works {
+    color: var(--text-secondary);
+    font-size: 0.9em;
+}
+
+.how-it-works h3 {
+    color: var(--primary-dark);
+    margin: 0 0 10px 0;
+    font-size: 1.3em;
+}
+
+.visualization-container {
+    margin-bottom: 15px;
+}
+
+.visualization-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.visualization-controls button {
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background-color 0.3s;
+}
+
+.visualization-controls button:hover {
+    background: var(--primary-dark);
+}
+
+.step-counter {
+    color: var(--text-secondary);
+    font-size: 0.9em;
+}
+
+#stepDisplay {
+    margin-bottom: 15px;
+}
+
+.sequence-display {
+    display: flex;
+    gap: 5px;
+    margin-top: 10px;
+    flex-wrap: wrap;
+}
+
+.sequence-item {
+    padding: 5px 10px;
+    background: var(--primary-light);
+    border-radius: 4px;
+    color: var(--primary-dark);
+    transition: all 0.3s;
+    font-size: 0.9em;
+}
+
+.sequence-item.current {
+    background: #3498db;
+    color: white;
+    transform: scale(1.05);
+}
+
+.sequence-item.computed {
+    background: #e8f5e9;
+    color: var(--secondary-color);
+}
+
+.dp-grid {
+    display: grid;
+    gap: 2px;
+    margin-top: 10px;
+}
+
+.dp-cell {
+    width: 50px;
+    height: 50px;
+    background: var(--primary-light);
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--primary-dark);
+    font-size: 0.9em;
+    transition: all 0.3s;
+}
+
+.dp-cell.current {
+    background: #3498db;
+    color: white;
+    transform: scale(1.05);
+}
+
+.dp-cell.computed {
+    background: #e8f5e9;
+    color: var(--secondary-color);
+}
+
+.error-message {
+    color: #e57373;
+    font-size: 0.9em;
+    padding: 10px;
+    background: #ffebee;
+    border-radius: var(--border-radius);
+    border-left: 3px solid #e57373;
+}
+
+.loading {
+    color: var(--text-secondary);
+    font-size: 0.9em;
+    padding: 10px;
+    text-align: center;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--background-light);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--primary-color);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--primary-dark);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .input-group {
+        flex-direction: column;
+    }
+
+    .controls {
+        padding: 10px;
+    }
+
+    .input-row {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    input[type="number"],
+    input[type="text"] {
+        max-width: 100%;
+    }
+
+    .speed-control {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .button-container {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .primary-button,
+    .secondary-button {
+        width: 100%;
+    }
+
+    .visualization-controls {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .header h1 {
+        font-size: 1.5em;
+    }
+
+    .subtitle {
+        font-size: 0.9em;
+    }
+
+    .back-button {
+        position: static;
+        text-align: left;
+        margin-bottom: 5px;
+        font-size: 0.9em;
+    }
+}
+
+@media (max-width: 480px) {
+    body {
+        padding: 10px;
+    }
+
+    #visualizationContainer {
+        padding: 10px;
+    }
+}
     </style>
 </head>
 <body>
@@ -124,9 +414,10 @@
         <div class="controls">
             {% if algorithm_id == 'dp/fibonacci' %}
                 <div class="input-group">
-                    <label for="n">N:</label>
-                    <input type="number" id="n" min="1" max="40" value="10" required>
-                    <button onclick="generateRandom()">Random Input</button>
+                    <label for="n">N: </label>
+                    <div class="input-row">
+                         <input type="number" id="n" min="1" max="40" value="10" required>
+                    </div>
                 </div>
             {% elif algorithm_id == 'dp/lcs' %}
                 <div class="input-group">
@@ -170,21 +461,18 @@
                 </div>
             {% endif %}
             
-            <div class="input-group">
+            <div class="speed-control">
                 <label for="speed">Speed:</label>
-                <select id="speed">
-                    <option value="1">Slowest</option>
-                    <option value="2">Slow</option>
-                    <option value="3" selected>Medium</option>
-                    <option value="4">Fast</option>
-                    <option value="5">Fastest</option>
-                </select>
+                <input type="range" id="speed" min="1" max="5" value="3">
+                <span id="speedLabel">Medium</span>
             </div>
             
-            <button onclick="visualize()" class="primary-button">Visualize</button>
-            <button onclick="reset()" class="secondary-button">Reset</button>
+            <div class="button-container">
+                <button onclick="visualize()" class="primary-button">Visualize</button>
+                <button onclick="generateRandom()" class="secondary-button">Random Input</button>
+                <button onclick="reset()" class="secondary-button">Reset</button>
+            </div>
         </div>
-        
         <div class="visualization-area">
             <div id="visualizationContainer">
                 <div class="how-it-works">
@@ -219,16 +507,62 @@
         const state = new VisualizationState();
 
         function getDelay() {
-            const delays = [1000, 800, 600, 400, 200];
-            const speed = parseInt(document.getElementById('speed').value);
+            const delays = [1000, 800, 600, 400, 200]; // Slowest to Fastest
+            const speed = parseInt(document.getElementById('speed').value) || 3;
             return delays[speed - 1] || 600;
         }
 
         function generateRandom() {
             try {
-                if (state.algorithmId === 'dp/fibonacci') {
+                const algorithmId = '{{ algorithm_id }}';
+                if (algorithmId === 'dp/fibonacci') {
                     const nInput = document.getElementById('n');
-                    nInput.value = Math.floor(Math.random() * 15) + 5;
+                    nInput.value = Math.floor(Math.random() * 15) + 5; // 5 to 20
+                } else if (algorithmId === 'dp/lcs') {
+                    const str1 = document.getElementById('str1');
+                    const str2 = document.getElementById('str2');
+                    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+                    str1.value = Array(Math.floor(Math.random() * 6) + 4) // 4-9 chars
+                        .fill()
+                        .map(() => chars.charAt(Math.floor(Math.random() * chars.length)))
+                        .join('');
+                    str2.value = Array(Math.floor(Math.random() * 6) + 4) // 4-9 chars
+                        .fill()
+                        .map(() => chars.charAt(Math.floor(Math.random() * chars.length)))
+                        .join('');
+                } else if (algorithmId === 'dp/knapsack') {
+                    const size = Math.floor(Math.random() * 5) + 3; // 3-7 items
+                    const values = Array(size).fill().map(() => Math.floor(Math.random() * 100) + 10);
+                    const weights = Array(size).fill().map(() => Math.floor(Math.random() * 20) + 5);
+                    const capacity = Math.floor(Math.random() * 50) + 30; // 30-79
+                    document.getElementById('values').value = values.join(', ');
+                    document.getElementById('weights').value = weights.join(', ');
+                    document.getElementById('capacity').value = capacity;
+                } else if (algorithmId === 'dp/edit_distance') {
+                    const str1 = document.getElementById('str1');
+                    const str2 = document.getElementById('str2');
+                    const chars = 'abcdefghijklmnopqrstuvwxyz';
+                    str1.value = Array(Math.floor(Math.random() * 7) + 4) // 4-10 chars
+                        .fill()
+                        .map(() => chars.charAt(Math.floor(Math.random() * chars.length)))
+                        .join('');
+                    str2.value = Array(Math.floor(Math.random() * 7) + 4) // 4-10 chars
+                        .fill()
+                        .map(() => chars.charAt(Math.floor(Math.random() * chars.length)))
+                        .join('');
+                } else if (algorithmId === 'dp/matrix_chain') {
+                    const size = Math.floor(Math.random() * 4) + 3; // 3-6 dimensions
+                    const dimensions = Array(size).fill().map(() => Math.floor(Math.random() * 50) + 10);
+                    document.getElementById('dimensions').value = dimensions.join(', ');
+                } else if (algorithmId === 'dp/lis') {
+                    const size = Math.floor(Math.random() * 8) + 5; // 5-12 elements
+                    const array = Array(size).fill().map(() => Math.floor(Math.random() * 100));
+                    document.getElementById('array').value = array.join(', ');
+                } else if (algorithmId === 'dp/rod-cutting') {
+                    const length = Math.floor(Math.random() * 5) + 5; // 5-9
+                    const prices = Array(length).fill().map(() => Math.floor(Math.random() * 20) + 1);
+                    document.getElementById('prices').value = prices.join(', ');
+                    document.getElementById('length').value = length;
                 }
             } catch (error) {
                 console.error('Error generating random input:', error);
@@ -494,6 +828,13 @@
                     calculationDiv.textContent = step.calculation;
                     container.appendChild(calculationDiv);
                 }
+
+                if (step.description) {
+                    const descriptionDiv = document.createElement('div');
+                    descriptionDiv.className = 'step';
+                    descriptionDiv.textContent = step.description;
+                    container.appendChild(descriptionDiv);
+                }
             } catch (error) {
                 throw new Error(`Fibonacci display error: ${error.message}`);
             }
@@ -532,6 +873,13 @@
                     sequenceDiv.textContent = `Current LCS: ${step.lcs.reverse().join('')}`;
                     container.appendChild(sequenceDiv);
                 }
+
+                if (step.description) {
+                    const descriptionDiv = document.createElement('div');
+                    descriptionDiv.className = 'step';
+                    descriptionDiv.textContent = step.description;
+                    container.appendChild(descriptionDiv);
+                }
             } catch (error) {
                 throw new Error(`LCS display error: ${error.message}`);
             }
@@ -568,6 +916,13 @@
                     selectedDiv.className = 'sequence-display';
                     selectedDiv.textContent = `Selected items: ${step.selected.join(', ')}`;
                     container.appendChild(selectedDiv);
+                }
+
+                if (step.description) {
+                    const descriptionDiv = document.createElement('div');
+                    descriptionDiv.className = 'step';
+                    descriptionDiv.textContent = step.description;
+                    container.appendChild(descriptionDiv);
                 }
             } catch (error) {
                 throw new Error(`Knapsack display error: ${error.message}`);
@@ -606,6 +961,13 @@
                     operationDiv.textContent = `Operation: ${step.operation}`;
                     container.appendChild(operationDiv);
                 }
+
+                if (step.description) {
+                    const descriptionDiv = document.createElement('div');
+                    descriptionDiv.className = 'step';
+                    descriptionDiv.textContent = step.description;
+                    container.appendChild(descriptionDiv);
+                }
             } catch (error) {
                 throw new Error(`Edit Distance display error: ${error.message}`);
             }
@@ -643,6 +1005,13 @@
                     costDiv.textContent = `Current cost: ${step.cost}`;
                     container.appendChild(costDiv);
                 }
+
+                if (step.description) {
+                    const descriptionDiv = document.createElement('div');
+                    descriptionDiv.className = 'step';
+                    descriptionDiv.textContent = step.description;
+                    container.appendChild(descriptionDiv);
+                }
             } catch (error) {
                 throw new Error(`Matrix Chain display error: ${error.message}`);
             }
@@ -676,6 +1045,13 @@
                     lisDiv.className = 'step';
                     lisDiv.textContent = `Current LIS: ${step.sequence.join(', ')}`;
                     container.appendChild(lisDiv);
+                }
+
+                if (step.description) {
+                    const descriptionDiv = document.createElement('div');
+                    descriptionDiv.className = 'step';
+                    descriptionDiv.textContent = step.description;
+                    container.appendChild(descriptionDiv);
                 }
             } catch (error) {
                 throw new Error(`LIS display error: ${error.message}`);
@@ -711,6 +1087,13 @@
                     cutDiv.textContent = `Best cut at length ${step.length}: ${step.current_cut}`;
                     container.appendChild(cutDiv);
                 }
+
+                if (step.description) {
+                    const descriptionDiv = document.createElement('div');
+                    descriptionDiv.className = 'step';
+                    descriptionDiv.textContent = step.description;
+                    container.appendChild(descriptionDiv);
+                }
             } catch (error) {
                 throw new Error(`Rod Cutting display error: ${error.message}`);
             }
@@ -740,6 +1123,14 @@
         document.addEventListener('DOMContentLoaded', () => {
             try {
                 generateRandom();
+                const speedControl = document.getElementById('speed');
+                const speedLabel = document.getElementById('speedLabel');
+                
+                speedControl.addEventListener('input', function() {
+                    const speeds = ['Slowest', 'Slow', 'Medium', 'Fast', 'Fastest'];
+                    speedLabel.textContent = speeds[this.value - 1];
+                });
+                
                 const inputs = document.querySelectorAll('input');
                 inputs.forEach(input => {
                     input.addEventListener('keypress', (e) => {

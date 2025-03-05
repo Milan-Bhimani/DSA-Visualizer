@@ -4,340 +4,733 @@
     <title>{{ algorithm_name }} - Algorithm Visualizer</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <style>
-        :root {
-            --primary-color: #2196f3;
-            --primary-dark: #1976d2;
-            --primary-light: #e3f2fd;
-            --secondary-color: #4caf50;
-            --text-primary: #333;
-            --text-secondary: #666;
-            --background-light: #f5f5f5;
-            --shadow-sm: 0 2px 4px rgba(0,0,0,0.1);
-            --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
-            --border-radius: 8px;
-        }
+:root {
+    --primary-color: black;
+    --primary-dark: black;
+    --primary-light: black;
+    --secondary-color: #4caf50;
+    --text-primary: black;
+    --text-secondary: #757575;
+    --background-light: #fafafa;
+    --shadow-sm: 0 2px 4px rgba(0,0,0,0.1);
+    --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
+    --border-radius: 8px;
+}
 
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            line-height: 1.6;
-            color: var(--text-primary);
-            background: #f8f9fa;
-            margin: 0;
-            padding: 20px;
-        }
+.how-it-works {
+    margin-left: 10px;
+}
 
-        .header {
-            text-align: center;
-            margin-bottom: 30px;
-            padding: 20px;
-            background: white;
-            border-radius: var(--border-radius);
-            box-shadow: var(--shadow-sm);
-        }
+body {
+    font-family: 'Roboto', sans-serif;
+    line-height: 1.6;
+    color: var(--text-primary);
+    background: #f8f9fa;
+    margin: 0;
+    padding: 20px;
+}
 
-        .back-button {
-            text-decoration: none;
-            color: var(--primary-color);
-            font-weight: 500;
-            display: inline-block;
-            margin-bottom: 15px;
-            transition: color 0.3s;
-        }
+.header {
+    margin-left: 145px;
+    text-align: center;
+    margin-bottom: 20px;
+    padding: 10px 20px;
+    background: white;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-sm);
+    position: relative;
+    border-top: none;
+    min-height: 80px;
+    max-width: 1200px;
+}
 
-        .back-button:hover {
-            color: var(--primary-dark);
-        }
+.back-button {
+    text-decoration: none;
+    color: var(--primary-color);
+    font-weight: 500;
+    display: inline-block;
+    margin: 0;
+    transition: color 0.3s;
+    position: absolute;
+    top: 10px;
+    left: 20px;
+    font-size: 0.9em;
+    line-height: 1;
+}
 
-        h1 {
-            color: var(--primary-dark);
-            margin: 0 0 10px 0;
-        }
+.back-button:hover {
+    color: var(--primary-dark);
+}
 
-        .subtitle {
-            color: var(--text-secondary);
-            margin: 0;
-        }
+.header h1 {
+    color: var(--text-primary);
+    margin: 0 0 5px 0;
+    font-size: 2em;
+    font-weight: bold;
+    line-height: 1.2;
+}
 
-        .visualization-container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
+.subtitle {
+    color: var(--text-secondary);
+    margin: 0;
+    font-size: 1em;
+    font-weight: normal;
+    line-height: 1.4;
+}
 
-        .control-panel {
-            background: white;
-            padding: 20px;
-            border-radius: var(--border-radius);
-            box-shadow: var(--shadow-sm);
-            margin-bottom: 20px;
-        }
+.visualization-container {
+    margin: 10px auto;
+    width: 1250px;
+}
 
-        .input-group {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 15px;
-            flex-wrap: wrap;
-        }
+.control-panel {
+    background: white;
+    padding: 15px;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 15px;
+}
 
-        input[type="text"],
-        input[type="number"] {
-            padding: 8px 12px;
-            border: 2px solid #e0e0e0;
-            border-radius: 4px;
-            font-size: 14px;
-            flex: 1;
-            min-width: 120px;
-            transition: border-color 0.3s;
-        }
+.controls-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
 
-        input[type="text"]:focus,
-        input[type="number"]:focus {
-            border-color: var(--primary-color);
-            outline: none;
-        }
+.input-group {
+    display: flex;
+    gap: 5px;
+    flex-wrap: wrap;
+    margin-bottom: 15px;
+}
 
-        button {
-            background: var(--primary-color);
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-weight: 500;
-            transition: background-color 0.3s;
-        }
+.input-group input[type="text"],
+.input-group input[type="number"] {
+    padding: 8px 12px;
+    border: 2px solid #e0e0e0;
+    border-radius: 4px;
+    font-size: 14px;
+    flex: 1;
+    min-width: 150px;
+    transition: border-color 0.3s;
+}
 
-        button:hover {
-            background: var(--primary-dark);
-        }
+.input-group input[type="text"]:focus,
+.input-group input[type="number"]:focus {
+    border-color: var(--primary-color);
+    outline: none;
+}
 
-        .speed-control {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
+.input-group button {
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background-color 0.3s;
+    margin-right: 5px;
+}
 
-        input[type="range"] {
-            flex: 1;
-            max-width: 200px;
-        }
+.input-group button:hover {
+    background: var(--primary-dark);
+}
 
-        .array-container {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            padding: 20px;
-            background: white;
-            border-radius: var(--border-radius);
-            box-shadow: var(--shadow-sm);
-            margin-bottom: 20px;
-            min-height: 80px;
-        }
+.speed-control {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
 
-        .array-element {
-            width: 50px;
-            height: 50px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: var(--primary-light);
-            border-radius: 4px;
-            font-weight: bold;
-            color: var(--primary-dark);
-            transition: all 0.3s;
-        }
+.speed-control label {
+    color: var(--text-secondary);
+    font-weight: 500;
+}
 
-        .array-element.comparing {
-            background: #fff3e0;
-            color: #f57c00;
-            transform: translateY(-5px);
-            box-shadow: var(--shadow-sm);
-        }
+.speed-control input[type="range"] {
+    flex: 1;
+    max-width: 150px;
+}
 
-        .array-element.found {
-            background: #e8f5e9;
-            color: var(--secondary-color);
-            transform: scale(1.1);
-            box-shadow: var(--shadow-sm);
-        }
+.visualization-area {
+    background: white;
+    padding: 15px;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 15px;
+    min-height: 400px;
+    overflow-y: auto;
+}
 
-        .steps-panel {
-            background: white;
-            padding: 20px;
-            border-radius: var(--border-radius);
-            box-shadow: var(--shadow-sm);
-            margin: 20px 0;
-            max-height: 300px;
-            overflow-y: auto;
-        }
+/* Special handling for Huffman visualization */
+.visualization-area.huffman {
+    background: var(--background-light);
+    box-shadow: none;
+    border-radius: 0;
+    padding: 0;
+}
 
-        .steps-panel h3 {
-            color: var(--primary-dark);
-            margin-top: 0;
-        }
+.step-container {
+    background: white;
+    padding: 15px;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-sm);
+    margin: 0 0 15px 0;
+    display: none;
+    overflow: auto;
+}
 
-        .step-item {
-            padding: 12px;
-            margin: 8px 0;
-            border-left: 3px solid #e0e0e0;
-            background: var(--background-light);
-            border-radius: 0 4px 4px 0;
-            transition: all 0.3s;
-        }
+.step-container.active {
+    display: block;
+}
 
-        .step-item.active {
-            background: var(--primary-light);
-            border-left-color: var(--primary-color);
-            transform: translateX(5px);
-        }
+.step-header {
+    color: var(--text-primary);
+    font-weight: bold;
+    margin: 0 0 10px 0;
+    font-size: 1.1em;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
 
-        .step-number {
-            font-weight: bold;
-            color: var(--primary-color);
-            margin-right: 10px;
-        }
+.step-explanation {
+    color: var(--text-secondary);
+    font-size: 0.9em;
+    margin-top: 10px;
+}
 
-        .info-panel {
-            background: white;
-            padding: 25px;
-            border-radius: var(--border-radius);
-            box-shadow: var(--shadow-sm);
-            margin-top: 20px;
-        }
+.steps-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 10px;
+}
 
-        .complexity-section {
-            display: flex;
-            gap: 20px;
-            margin-bottom: 25px;
-            padding: 20px;
-            background: var(--primary-light);
-            border-radius: var(--border-radius);
-            box-shadow: var(--shadow-sm);
-        }
+.step-navigation {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 15px;
+    padding: 15px;
+    background: white;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-sm);
+}
 
-        .complexity-item {
-            flex: 1;
-            text-align: center;
-            padding: 15px;
-            background: white;
-            border-radius: var(--border-radius);
-            box-shadow: var(--shadow-sm);
-        }
+.step-navigation button {
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background-color 0.3s;
+}
 
-        .complexity-item .label {
-            font-weight: bold;
-            color: var(--primary-dark);
-            display: block;
-            margin-bottom: 8px;
-            font-size: 0.9em;
-            text-transform: uppercase;
-        }
+.step-navigation button:disabled {
+    background: #e0e0e0;
+    cursor: not-allowed;
+}
 
-        .complexity-item .value {
-            font-family: 'Courier New', monospace;
-            font-size: 1.2em;
-            color: var(--text-primary);
-        }
+.step-navigation button:not(:disabled):hover {
+    background: var(--primary-dark);
+}
 
-        .how-it-works {
-            margin-top: 25px;
-        }
+.step-navigation .step-counter {
+    color: var(--text-secondary);
+    font-size: 0.9em;
+    min-width: 100px;
+    text-align: center;
+}
 
-        .how-it-works h3 {
-            color: var(--primary-color);
-            margin-bottom: 20px;
-            font-size: 1.5em;
-        }
+/* Activity Selection Styles */
+.timeline {
+    height: 100px;
+    padding: 8px;
+    margin: 10px 0;
+    position: relative;
+}
 
-        .algorithm-explanation {
-            background: var(--background-light);
-            padding: 20px;
-            border-radius: var(--border-radius);
-            margin-bottom: 20px;
-            line-height: 1.8;
-        }
+.activity {
+    position: absolute;
+    height: 35px;
+    background: var(--primary-light);
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 0.9em;
+    transition: all 0.3s;
+    box-shadow: var(--shadow-sm);
+}
 
-        .key-points {
-            margin-top: 20px;
-        }
+.activity.selected {
+    background: #66BB6A; /* From .sequence-item.target */
+    color: white;
+}
 
-        .key-points h4 {
-            color: var(--primary-dark);
-            margin-bottom: 15px;
-        }
+.activity.current {
+    background: #3498db; /* From .sequence-item.current */
+    color: white;
+    transform: scale(1.1);
+}
 
-        .key-point {
-            display: flex;
-            align-items: flex-start;
-            margin-bottom: 15px;
-            padding: 15px;
-            background: var(--background-light);
-            border-radius: var(--border-radius);
-            transition: transform 0.3s;
-        }
+/* Knapsack Styles */
+.items-container {
+    height: 150px;
+    padding: 8px;
+    margin: 10px 0;
+    display: flex;
+    gap: 5px;
+}
 
-        .key-point:hover {
-            transform: translateX(5px);
-        }
+.item {
+    flex: 1;
+    background: var(--primary-light);
+    min-height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 0.9em;
+    border-radius: 4px;
+    transition: all 0.3s;
+    white-space: pre-wrap;
+    text-align: center;
+    box-shadow: var(--shadow-sm);
+}
 
-        .key-point-number {
-            background: var(--primary-color);
-            color: white;
-            width: 28px;
-            height: 28px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-right: 15px;
-            flex-shrink: 0;
-            font-weight: bold;
-        }
+.item.selected {
+    background: #66BB6A;
+    color: white;
+}
 
-        .key-point ul {
-            margin: 10px 0 0 0;
-            padding-left: 20px;
-        }
+.item.current {
+    background: #3498db;
+    color: white;
+    transform: scale(1.1);
+}
 
-        .key-point li {
-            margin: 5px 0;
-            color: var(--text-secondary);
-        }
+/* Huffman Coding Styles */
+.huffman-tree {
+    position: relative;
+    height: 600px;
+    width: 100%;
+    min-width: 900px;
+    background: white;
+    border-radius: var(--border-radius);
+    padding: 15px;
+    box-shadow: var(--shadow-sm);
+    overflow: visible;
+    margin: 10px auto 15px;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+}
 
-        /* Scrollbar styling */
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
+.huffman-node {
+    position: absolute;
+    width: 100px;
+    height: 100px;
+    background: var(--primary-light);
+    border-radius: 50%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.2em;
+    transition: all 0.3s;
+    box-shadow: var(--shadow-md);
+    transform: translate(-50%, -50%);
+}
 
-        ::-webkit-scrollbar-track {
-            background: var(--background-light);
-            border-radius: 4px;
-        }
+.huffman-node.leaf {
+    background: #e8f5e9; /* From .sequence-item.computed */
+    color: var(--secondary-color);
+}
 
-        ::-webkit-scrollbar-thumb {
-            background: var(--primary-color);
-            border-radius: 4px;
-        }
+.huffman-node.internal {
+    background: var(--primary-light);
+}
 
-        ::-webkit-scrollbar-thumb:hover {
-            background: var(--primary-dark);
-        }
+.huffman-node.current {
+    background: #3498db;
+    color: white;
+    transform: translate(-50%, -50%) scale(1.1);
+}
 
-        /* Responsive adjustments */
-        @media (max-width: 768px) {
-            .input-group {
-                flex-direction: column;
-            }
-            
-            .complexity-section {
-                flex-direction: column;
-            }
-            
-            .array-element {
-                width: 40px;
-                height: 40px;
-                font-size: 0.9em;
-            }
-        }
+.huffman-node .char {
+    font-weight: bold;
+    font-size: 1.8em;
+    margin-bottom: 10px;
+}
+
+.huffman-node .freq {
+    font-size: 1.1em;
+    background: rgba(255, 255, 255, 0.25);
+    padding: 5px 15px;
+    border-radius: 4px;
+}
+
+.huffman-edge {
+    position: absolute;
+    background: #e0e0e0;
+    height: 4px;
+    transform-origin: 0 0;
+    z-index: 1;
+    opacity: 0.6;
+    transition: all 0.3s;
+    border-radius: 2px;
+}
+
+/* Coin Change Styles */
+.coin-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    padding: 15px;
+}
+
+.coin {
+    width: 70px;
+    height: 70px;
+    background: var(--primary-light);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1em;
+    font-weight: 500;
+    transition: all 0.3s;
+    box-shadow: var(--shadow-sm);
+}
+
+.coin.selected {
+    background: #66BB6A;
+    color: white;
+}
+
+.coin.current {
+    background: #3498db;
+    color: white;
+    transform: scale(1.1);
+}
+
+.coin-count {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background: var(--primary-dark);
+    color: white;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    font-size: 0.8em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Job Scheduling Styles */
+.schedule-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 15px;
+    padding: 15px;
+}
+
+.job {
+    padding: 15px;
+    background: var(--primary-light);
+    border-radius: 4px;
+    color: white;
+    font-size: 0.9em;
+    transition: all 0.3s;
+    box-shadow: var(--shadow-sm);
+}
+
+.job.selected {
+    background: #66BB6A;
+    color: white;
+}
+
+.job.current {
+    background: #3498db;
+    color: white;
+    transform: scale(1.1);
+}
+
+/* Platform Styles */
+.platforms-container {
+    height: 300px;
+    padding: 15px;
+    position: relative;
+}
+
+.platform {
+    background: white;
+    border-radius: 4px;
+    padding: 15px;
+    box-shadow: var(--shadow-sm);
+    position: relative;
+    min-height: 60px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.platform-number {
+    position: absolute;
+    left: -10px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: var(--primary-color);
+    color: white;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8em;
+    font-weight: bold;
+}
+
+.train {
+    background: var(--primary-light);
+    border-radius: 4px;
+    padding: 10px 15px;
+    color: white;
+    font-size: 0.9em;
+    min-width: 120px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s;
+    box-shadow: var(--shadow-sm);
+}
+
+.train.arriving {
+    background: #66BB6A;
+    color: white;
+}
+
+.train.departing {
+    background: var(--primary-color);
+    color: white;
+}
+
+.train .time {
+    position: absolute;
+    top: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.8em;
+    color: var(--text-primary);
+    background: white;
+    padding: 2px 6px;
+    border-radius: 4px;
+    box-shadow: var(--shadow-sm);
+}
+
+.platform-stats {
+    display: flex;
+    gap: 20px;
+    margin-top: 15px;
+    padding: 15px;
+    background: white;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-sm);
+}
+
+.platform-stat {
+    flex: 1;
+    text-align: center;
+}
+
+.platform-stat-label {
+    color: var(--text-secondary);
+    font-size: 0.9em;
+    margin-bottom: 5px;
+    display: block;
+}
+
+.platform-stat-value {
+    font-size: 1.1em;
+    color: var(--text-primary);
+}
+
+/* Info Panel Styles */
+.info-panel {
+    background: white;
+    padding: 15px;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-sm);
+    margin-top: 15px;
+}
+
+/* Complexity Box Styles */
+.complexity-section {
+    display: flex;
+    flex-direction: row; /* Force side-by-side layout */
+    flex-wrap: nowrap; /* Prevent wrapping */
+    gap: 15px; /* Space between boxes */
+    margin-bottom: 15px;
+    padding: 5px; /* Minimal padding to save space */
+    background: var(--primary-light);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-sm);
+    width: 100%; /* Ensure full width of parent */
+    overflow-x: auto; /* Allow horizontal scrolling if needed */
+    justify-content: center; /* Center the items horizontally */
+}
+
+.complexity-item {
+    flex: 0 0 calc(50% - 15px); /* Fixed width of 50% minus gap, no shrinking/growing */
+    text-align: center;
+    padding: 10px; /* Standard padding */
+    background: var(--primary-light);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-sm);
+    box-sizing: border-box; /* Include padding in width */
+    min-width: 150px; /* Minimum width to ensure readability */
+}
+
+.complexity-item .label {
+    font-weight: bold;
+    color: white;
+    display: block;
+    margin-bottom: 5px;
+    font-size: 0.9em;
+    text-transform: uppercase;
+    white-space: nowrap; /* Prevent text wrapping */
+    overflow: hidden; /* Handle overflow */
+    text-overflow: ellipsis; /* Add ellipsis for long text */
+}
+
+.complexity-item .value {
+    font-family: 'Courier New', monospace;
+    font-size: 1.1em;
+    color: white;
+    white-space: nowrap; /* Prevent text wrapping */
+    overflow: hidden; /* Handle overflow */
+    text-overflow: ellipsis; /* Add ellipsis for long text */
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--background-light);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--primary-color);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--primary-dark);
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .input-group {
+        flex-direction: column;
+    }
+
+    .step-navigation {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .visualization-area {
+        padding: 10px;
+    }
+
+    .huffman-tree {
+        min-width: 600px;
+        height: 450px;
+        padding: 10px;
+    }
+
+    .complexity-section {
+        gap: 5px; /* Reduce gap on smaller screens */
+        padding: 5px;
+    }
+
+    .complexity-item {
+        padding: 8px;
+        min-width: 120px; /* Slightly smaller minimum width */
+        font-size: 0.9em; /* Slightly reduce font size */
+    }
+}
+
+@media (max-width: 480px) {
+    body {
+        padding: 10px;
+    }
+
+    .control-panel,
+    .visualization-area,
+    .step-container {
+        padding: 10px;
+    }
+
+    .header h1 {
+        font-size: 1.5em;
+    }
+
+    .subtitle {
+        font-size: 0.9em;
+    }
+
+    .back-button {
+        position: static;
+        text-align: left;
+        margin-bottom: 5px;
+    }
+
+    .complexity-section {
+        gap: 5px;
+        padding: 5px;
+    }
+
+    .complexity-item {
+        padding: 6px;
+        min-width: 100px; /* Even smaller minimum width */
+        font-size: 0.8em; /* Further reduce font size */
+    }
+}
+
+@media (max-width: 320px) {
+    /* Allow stacking only on extremely small screens */
+    .complexity-section {
+        flex-direction: column;
+        flex-wrap: wrap;
+        gap: 5px;
+    }
+
+    .complexity-item {
+        flex: 0 0 100%;
+        min-width: 100%;
+        padding: 6px;
+    }
+}
+
+.key-point-list{
+    margin-left: 15px;
+}
     </style>
 </head>
 <body>
@@ -370,49 +763,51 @@
                 <h3>Algorithm Steps</h3>
                 <div id="stepsList"></div>
             </div>
-            <div class="info-panel">
-                <div class="complexity-section">
-                    <div class="complexity-item">
-                        <span class="label">Time Complexity</span>
-                        <span class="value">{{ time_complexity }}</span>
+            
+            <h3>How It Works</h3>
+            <h4>Key Steps:</h4>
+            <div class="how-it-works">
+                <div class="algorithm-explanation">
+                    {{ algorithm_explanation }}
+                </div>
+                <div class="key-points">
+                    <div class="key-point">
+                        <span class="key-point-number">1</span>
+                        <span>Initialize the search by identifying the search space (the array to search in).</span>
                     </div>
-                    <div class="complexity-item">
-                        <span class="label">Space Complexity</span>
-                        <span class="value">{{ space_complexity }}</span>
+                    <div class="key-point">
+                        <span class="key-point-number">2</span>
+                        <span>Compare the target value with the current element(s) being examined.</span>
+                    </div>
+                    <div class="key-point">
+                        <span class="key-point-number">3</span>
+                        <span>Based on the comparison, either:</span>
+                        <ul class="key-point-list">
+                            <li>Return the current position if the target is found</li>
+                            <li>Continue searching in the appropriate portion of the array</li>
+                        </ul>
+                    </div>
+                    <div class="key-point">
+                        <span class="key-point-number">4</span>
+                        <span>Repeat steps 2-3 until either:</span>
+                        <ul class="key-point-list">
+                            <li>The target element is found</li>
+                            <li>The entire search space has been examined</li>
+                        </ul>
                     </div>
                 </div>
-                <div class="how-it-works">
-                    <h3>How It Works</h3>
-                    <div class="algorithm-explanation">
-                        {{ algorithm_explanation }}
-                    </div>
-                    <div class="key-points">
-                        <h4>Key Steps:</h4>
-                        <div class="key-point">
-                            <span class="key-point-number">1</span>
-                            <span>Initialize the search by identifying the search space (the array to search in).</span>
-                        </div>
-                        <div class="key-point">
-                            <span class="key-point-number">2</span>
-                            <span>Compare the target value with the current element(s) being examined.</span>
-                        </div>
-                        <div class="key-point">
-                            <span class="key-point-number">3</span>
-                            <span>Based on the comparison, either:</span>
-                            <ul>
-                                <li>Return the current position if the target is found</li>
-                                <li>Continue searching in the appropriate portion of the array</li>
-                            </ul>
-                        </div>
-                        <div class="key-point">
-                            <span class="key-point-number">4</span>
-                            <span>Repeat steps 2-3 until either:</span>
-                            <ul>
-                                <li>The target element is found</li>
-                                <li>The entire search space has been examined</li>
-                            </ul>
-                        </div>
-                    </div>
+            </div>
+        </div>
+
+        <div class="info-panel">
+            <div class="complexity-section">
+                <div class="complexity-item">
+                    <span class="label">Time Complexity</span>
+                    <span class="value">{{ time_complexity }}</span>
+                </div>
+                <div class="complexity-item">
+                    <span class="label">Space Complexity</span>
+                    <span class="value">{{ space_complexity }}</span>
                 </div>
             </div>
         </div>
@@ -571,4 +966,4 @@
         generateSortedArray();
     </script>
 </body>
-</html> 
+</html>
