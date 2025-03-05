@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ algorithm_name | safe }} - Algorithm Visualizer</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f0f2f5;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .dp-grid {
+            display: grid;
+            gap: 2px;
+            margin: 20px auto;
+            background: #f5f6fa;
+            padding: 10px;
+            border-radius: 8px;
+        }
+
+        .dp-cell {
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: white;
+            border: 1px solid #dcdde1;
+            transition: all 0.3s ease;
+            font-size: 16px;
+        }
+
+        .dp-cell.current { background-color: #3498db; color: white; }
+        .dp-cell.computed { background-color: #2ecc71; color: white; }
+        .dp-cell.optimal { background-color: #f1c40f; color: white; }
+
+        .sequence-display {
+            margin: 20px 0;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .sequence-item {
+            display: inline-block;
+            padding: 8px 12px;
+            margin: 4px;
+            background: #f5f6fa;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+
+        .sequence-item.current { background: #3498db; color: white; }
+        .sequence-item.computed { background: #2ecc71; color: white; }
+
+        .step-explanation {
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+
+        .input-group select, .input-group input {
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            margin: 5px;
+        }
+
+        .primary-button, .visualization-controls button {
+            padding: 12px 20px;
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .primary-button:hover, .visualization-controls button:hover {
+            background: #2980b9;
+        }
+
+        .secondary-button {
+            padding: 12px 20px;
+            background: #95a5a6;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .secondary-button:hover {
+            background: #7f8c8d;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <a href="/" class="back-button">← Back to Algorithms</a>
+            <h1>{{ algorithm_name | safe }}</h1>
+            <p class="subtitle">{{ algorithm_description | safe }}</p>
+        </div>
+        
+        <div class="controls">
+            {% if algorithm_id == 'dp/fibonacci' %}
+                <div class="input-group">
+                    <label for="n">N:</label>
+                    <input type="number" id="n" min="1" max="40" value="10" required>
+                    <button onclick="generateRandom()">Random Input</button>
+                </div>
+            {% elif algorithm_id == 'dp/lcs' %}
+                <div class="input-group">
+                    <label for="str1">String 1:</label>
+                    <input type="text" id="str1" value="ABCDGH" required>
+                    <label for="str2">String 2:</label>
+                    <input type="text" id="str2" value="AEDFHR" required>
+                </div>
+            {% elif algorithm_id == 'dp/knapsack' %}
+                <div class="input-group">
+                    <label for="values">Values (comma-separated):</label>
+                    <input type="text" id="values" value="60,100,120" required>
+                    <label for="weights">Weights (comma-separated):</label>
+                    <input type="text" id="weights" value="10,20,30" required>
+                    <label for="capacity">Capacity:</label>
+                    <input type="number" id="capacity" value="50" required>
+                </div>
+            {% elif algorithm_id == 'dp/edit_distance' %}
+                <div class="input-group">
+                    <label for="str1">String 1:</label>
+                    <input type="text" id="str1" value="sunday" required>
+                    <label for="str2">String 2:</label>
+                    <input type="text" id="str2" value="saturday" required>
+                </div>
+            {% elif algorithm_id == 'dp/matrix_chain' %}
+                <div class="input-group">
+                    <label for="dimensions">Matrix Dimensions (comma-separated):</label>
+                    <input type="text" id="dimensions" value="40,20,30,10,30" required>
+                </div>
+            {% elif algorithm_id == 'dp/lis' %}
+                <div class="input-group">
+                    <label for="array">Array (comma-separated):</label>
+                    <input type="text" id="array" value="10,22,9,33,21,50,41,60,80" required>
+                </div>
+            {% elif algorithm_id == 'dp/rod-cutting' %}
+                <div class="input-group">
+                    <label for="prices">Prices (comma-separated):</label>
+                    <input type="text" id="prices" value="1,5,8,9,10,17,17,20" required>
+                    <label for="length">Rod Length:</label>
+                    <input type="number" id="length" value="8" required>
+                </div>
+            {% endif %}
+            
+            <div class="input-group">
+                <label for="speed">Speed:</label>
+                <select id="speed">
+                    <option value="1">Slowest</option>
+                    <option value="2">Slow</option>
+                    <option value="3" selected>Medium</option>
+                    <option value="4">Fast</option>
+                    <option value="5">Fastest</option>
+                </select>
+            </div>
+            
+            <button onclick="visualize()" class="primary-button">Visualize</button>
+            <button onclick="reset()" class="secondary-button">Reset</button>
+        </div>
+        
+        <div class="visualization-area">
+            <div id="visualizationContainer">
+                <div class="how-it-works">
+                    <h3>How it Works</h3>
+                    <p>{{ algorithm_description | safe }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class VisualizationState {
+            constructor() {
+                this.currentStep = 0;
+                this.steps = [];
+                this.animationInterval = null;
+                this.isVisualizing = false;
+                this.algorithmId = '{{ algorithm_id }}';
+            }
+
+            reset() {
+                if (this.animationInterval) {
+                    clearInterval(this.animationInterval);
+                    this.animationInterval = null;
+                }
+                this.currentStep = 0;
+                this.steps = [];
+                this.isVisualizing = false;
+            }
+        }
+
+        const state = new VisualizationState();
+
+        function getDelay() {
+            const delays = [1000, 800, 600, 400, 200];
+            const speed = parseInt(document.getElementById('speed').value);
+            return delays[speed - 1] || 600;
+        }
+
+        function generateRandom() {
+            try {
+                if (state.algorithmId === 'dp/fibonacci') {
+                    const nInput = document.getElementById('n');
+                    nInput.value = Math.floor(Math.random() * 15) + 5;
+                }
+            } catch (error) {
+                console.error('Error generating random input:', error);
+            }
+        }
+
+        async function visualize() {
+            if (state.isVisualizing) return;
+            state.isVisualizing = true;
+            state.reset();
+
+            const container = document.getElementById('visualizationContainer');
+            const loadingDiv = document.createElement('div');
+            loadingDiv.className = 'loading';
+            loadingDiv.textContent = 'Loading visualization...';
+            container.innerHTML = '';
+            container.appendChild(loadingDiv);
+
+            const data = {};
+            try {
+                if (state.algorithmId === 'dp/fibonacci') {
+                    const nInput = document.getElementById('n');
+                    const n = parseInt(nInput.value);
+                    if (isNaN(n) || n < 1 || n > 40) {
+                        throw new Error('Please enter a number between 1 and 40');
+                    }
+                    data.n = n;
+                } else if (state.algorithmId === 'dp/lcs') {
+                    const str1 = document.getElementById('str1').value;
+                    const str2 = document.getElementById('str2').value;
+                    if (!str1 || !str2) {
+                        throw new Error('Please enter both strings');
+                    }
+                    data.str1 = str1;
+                    data.str2 = str2;
+                } else if (state.algorithmId === 'dp/knapsack') {
+                    const values = document.getElementById('values').value.split(',').map(Number);
+                    const weights = document.getElementById('weights').value.split(',').map(Number);
+                    const capacity = parseInt(document.getElementById('capacity').value);
+                    
+                    if (values.some(isNaN) || weights.some(isNaN) || isNaN(capacity)) {
+                        throw new Error('Please enter valid numbers');
+                    }
+                    if (values.length !== weights.length) {
+                        throw new Error('Values and weights must have the same length');
+                    }
+                    
+                    data.values = values;
+                    data.weights = weights;
+                    data.capacity = capacity;
+                } else if (state.algorithmId === 'dp/edit_distance') {
+                    const str1 = document.getElementById('str1').value;
+                    const str2 = document.getElementById('str2').value;
+                    if (!str1 || !str2) {
+                        throw new Error('Please enter both strings');
+                    }
+                    data.str1 = str1;
+                    data.str2 = str2;
+                } else if (state.algorithmId === 'dp/matrix_chain') {
+                    const dimensions = document.getElementById('dimensions').value.split(',').map(Number);
+                    if (dimensions.some(isNaN) || dimensions.length < 2) {
+                        throw new Error('Please enter valid matrix dimensions');
+                    }
+                    data.dimensions = dimensions;
+                } else if (state.algorithmId === 'dp/lis') {
+                    const array = document.getElementById('array').value.split(',').map(Number);
+                    if (array.some(isNaN)) {
+                        throw new Error('Please enter valid numbers');
+                    }
+                    data.array = array;
+                } else if (state.algorithmId === 'dp/rod-cutting') {
+                    const prices = document.getElementById('prices').value.split(',').map(Number);
+                    const length = parseInt(document.getElementById('length').value);
+                    if (prices.some(isNaN) || isNaN(length)) {
+                        throw new Error('Please enter valid numbers');
+                    }
+                    data.prices = prices;
+                    data.length = length;
+                }
+
+                const response = await fetch(`/api/${state.algorithmId}`, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+                }
+
+                const result = await response.json();
+                if (!result.steps || !Array.isArray(result.steps)) {
+                    throw new Error('Invalid response format from server');
+                }
+
+                state.steps = result.steps;
+                setupVisualization(container);
+                showStep();
+
+            } catch (error) {
+                console.error('Visualization error:', error);
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'error-message';
+                errorDiv.textContent = `Error: ${error.message}`;
+                container.innerHTML = '';
+                container.appendChild(errorDiv);
+            } finally {
+                state.isVisualizing = false;
+            }
+        }
+
+        function setupVisualization(container) {
+            try {
+                container.innerHTML = '';
+                const visualizationDiv = document.createElement('div');
+                visualizationDiv.className = 'visualization-container';
+
+                const controlsDiv = document.createElement('div');
+                controlsDiv.className = 'visualization-controls';
+
+                const prevButton = document.createElement('button');
+                prevButton.textContent = '← Previous';
+                prevButton.onclick = () => navigateStep(-1);
+
+                const playButton = document.createElement('button');
+                playButton.textContent = 'Play';
+                playButton.onclick = () => toggleAnimation(playButton);
+
+                const nextButton = document.createElement('button');
+                nextButton.textContent = 'Next →';
+                nextButton.onclick = () => navigateStep(1);
+
+                const stepCounter = document.createElement('div');
+                stepCounter.className = 'step-counter';
+                stepCounter.id = 'stepCounter';
+
+                controlsDiv.append(prevButton, playButton, nextButton, stepCounter);
+
+                const stepDisplay = document.createElement('div');
+                stepDisplay.id = 'stepDisplay';
+
+                const explanationDiv = document.createElement('div');
+                explanationDiv.id = 'explanationDisplay';
+                explanationDiv.className = 'step-explanation';
+
+                visualizationDiv.append(controlsDiv, stepDisplay, explanationDiv);
+                container.appendChild(visualizationDiv);
+            } catch (error) {
+                console.error('Setup visualization error:', error);
+                container.innerHTML = `<div class="error-message">Error setting up visualization: ${error.message}</div>`;
+            }
+        }
+
+        function navigateStep(delta) {
+            try {
+                const newStep = state.currentStep + delta;
+                if (newStep >= 0 && newStep < state.steps.length) {
+                    state.currentStep = newStep;
+                    showStep();
+                }
+            } catch (error) {
+                console.error('Navigation error:', error);
+            }
+        }
+
+        function toggleAnimation(playButton) {
+            try {
+                if (state.animationInterval) {
+                    clearInterval(state.animationInterval);
+                    state.animationInterval = null;
+                    playButton.textContent = 'Play';
+                } else {
+                    playButton.textContent = 'Pause';
+                    state.animationInterval = setInterval(() => {
+                        if (state.currentStep < state.steps.length - 1) {
+                            state.currentStep++;
+                            showStep();
+                        } else {
+                            clearInterval(state.animationInterval);
+                            state.animationInterval = null;
+                            playButton.textContent = 'Play';
+                        }
+                    }, getDelay());
+                }
+            } catch (error) {
+                console.error('Animation error:', error);
+                playButton.textContent = 'Play';
+            }
+        }
+
+        function showStep() {
+            try {
+                const step = state.steps[state.currentStep];
+                const stepDisplay = document.getElementById('stepDisplay');
+                const explanationDisplay = document.getElementById('explanationDisplay');
+                const stepCounter = document.getElementById('stepCounter');
+
+                if (!step || typeof step !== 'object') {
+                    stepDisplay.innerHTML = '<div class="error-message">Invalid step data</div>';
+                    return;
+                }
+
+                stepCounter.textContent = `Step ${state.currentStep + 1} of ${state.steps.length}`;
+                stepDisplay.innerHTML = '';
+                explanationDisplay.textContent = step.explanation || 'Processing step...';
+
+                const displayFunctions = {
+                    'dp/fibonacci': displayFibonacci,
+                    'dp/lcs': displayLCS,
+                    'dp/knapsack': displayKnapsack,
+                    'dp/edit_distance': displayEditDistance,
+                    'dp/matrix_chain': displayMatrixChain,
+                    'dp/lis': displayLIS,
+                    'dp/rod-cutting': displayRodCutting
+                };
+
+                const displayFunc = displayFunctions[state.algorithmId] || (() => {
+                    stepDisplay.innerHTML = '<div class="error-message">Visualization not implemented for this algorithm</div>';
+                });
+                displayFunc(step, stepDisplay);
+            } catch (error) {
+                console.error('Show step error:', error);
+                const stepDisplay = document.getElementById('stepDisplay');
+                stepDisplay.innerHTML = `<div class="error-message">Error displaying step: ${error.message}</div>`;
+            }
+        }
+
+        function displayFibonacci(step, container) {
+            try {
+                if (!step || typeof step !== 'object' || !Array.isArray(step.sequence)) {
+                    throw new Error('Invalid data format for Fibonacci visualization');
+                }
+
+                const sequenceDiv = document.createElement('div');
+                sequenceDiv.className = 'sequence-display';
+
+                const currentNumberDiv = document.createElement('div');
+                currentNumberDiv.className = 'step';
+                currentNumberDiv.textContent = `Calculating F(${step.current_index})`;
+                container.appendChild(currentNumberDiv);
+
+                step.sequence.forEach((num, index) => {
+                    const numDiv = document.createElement('div');
+                    numDiv.className = 'sequence-item';
+                    if (index === step.current_index) {
+                        numDiv.classList.add('current');
+                    } else if (index < step.current_index) {
+                        numDiv.classList.add('computed');
+                    }
+                    numDiv.textContent = num;
+                    sequenceDiv.appendChild(numDiv);
+                });
+
+                container.appendChild(sequenceDiv);
+
+                if (step.calculation) {
+                    const calculationDiv = document.createElement('div');
+                    calculationDiv.className = 'step';
+                    calculationDiv.textContent = step.calculation;
+                    container.appendChild(calculationDiv);
+                }
+            } catch (error) {
+                throw new Error(`Fibonacci display error: ${error.message}`);
+            }
+        }
+
+        function displayLCS(step, container) {
+            try {
+                if (!step || !step.dp) {
+                    throw new Error('Invalid data format for LCS visualization');
+                }
+
+                const gridDiv = document.createElement('div');
+                gridDiv.className = 'dp-grid';
+                gridDiv.style.gridTemplateColumns = `repeat(${step.dp[0].length}, 50px)`;
+
+                // Create grid cells
+                for (let i = 0; i < step.dp.length; i++) {
+                    for (let j = 0; j < step.dp[0].length; j++) {
+                        const cell = document.createElement('div');
+                        cell.className = 'dp-cell';
+                        if (i === step.i && j === step.j) {
+                            cell.classList.add('current');
+                        } else if (i <= step.i && j <= step.j) {
+                            cell.classList.add('computed');
+                        }
+                        cell.textContent = step.dp[i][j];
+                        gridDiv.appendChild(cell);
+                    }
+                }
+
+                container.appendChild(gridDiv);
+
+                if (step.lcs) {
+                    const sequenceDiv = document.createElement('div');
+                    sequenceDiv.className = 'sequence-display';
+                    sequenceDiv.textContent = `Current LCS: ${step.lcs.reverse().join('')}`;
+                    container.appendChild(sequenceDiv);
+                }
+            } catch (error) {
+                throw new Error(`LCS display error: ${error.message}`);
+            }
+        }
+
+        function displayKnapsack(step, container) {
+            try {
+                if (!step || !step.dp) {
+                    throw new Error('Invalid data format for Knapsack visualization');
+                }
+
+                const gridDiv = document.createElement('div');
+                gridDiv.className = 'dp-grid';
+                gridDiv.style.gridTemplateColumns = `repeat(${step.dp[0].length}, 50px)`;
+
+                for (let i = 0; i < step.dp.length; i++) {
+                    for (let j = 0; j < step.dp[0].length; j++) {
+                        const cell = document.createElement('div');
+                        cell.className = 'dp-cell';
+                        if (i === step.item + 1 && j === step.capacity) {
+                            cell.classList.add('current');
+                        } else if (i <= step.item + 1 && j <= step.capacity) {
+                            cell.classList.add('computed');
+                        }
+                        cell.textContent = step.dp[i][j];
+                        gridDiv.appendChild(cell);
+                    }
+                }
+
+                container.appendChild(gridDiv);
+
+                if (step.selected) {
+                    const selectedDiv = document.createElement('div');
+                    selectedDiv.className = 'sequence-display';
+                    selectedDiv.textContent = `Selected items: ${step.selected.join(', ')}`;
+                    container.appendChild(selectedDiv);
+                }
+            } catch (error) {
+                throw new Error(`Knapsack display error: ${error.message}`);
+            }
+        }
+
+        function displayEditDistance(step, container) {
+            try {
+                if (!step || !step.dp) {
+                    throw new Error('Invalid data format for Edit Distance visualization');
+                }
+
+                const gridDiv = document.createElement('div');
+                gridDiv.className = 'dp-grid';
+                gridDiv.style.gridTemplateColumns = `repeat(${step.dp[0].length}, 50px)`;
+
+                for (let i = 0; i < step.dp.length; i++) {
+                    for (let j = 0; j < step.dp[0].length; j++) {
+                        const cell = document.createElement('div');
+                        cell.className = 'dp-cell';
+                        if (i === step.i + 1 && j === step.j + 1) {
+                            cell.classList.add('current');
+                        } else if (i <= step.i + 1 && j <= step.j + 1) {
+                            cell.classList.add('computed');
+                        }
+                        cell.textContent = step.dp[i][j];
+                        gridDiv.appendChild(cell);
+                    }
+                }
+
+                container.appendChild(gridDiv);
+
+                if (step.operation) {
+                    const operationDiv = document.createElement('div');
+                    operationDiv.className = 'step';
+                    operationDiv.textContent = `Operation: ${step.operation}`;
+                    container.appendChild(operationDiv);
+                }
+            } catch (error) {
+                throw new Error(`Edit Distance display error: ${error.message}`);
+            }
+        }
+
+        function displayMatrixChain(step, container) {
+            try {
+                if (!step || !step.dp) {
+                    throw new Error('Invalid data format for Matrix Chain visualization');
+                }
+
+                const gridDiv = document.createElement('div');
+                gridDiv.className = 'dp-grid';
+                gridDiv.style.gridTemplateColumns = `repeat(${step.dp[0].length}, 50px)`;
+
+                for (let i = 0; i < step.dp.length; i++) {
+                    for (let j = 0; j < step.dp[0].length; j++) {
+                        const cell = document.createElement('div');
+                        cell.className = 'dp-cell';
+                        if (i === step.i && j === step.j) {
+                            cell.classList.add('current');
+                        } else if (i <= step.i && j <= step.j) {
+                            cell.classList.add('computed');
+                        }
+                        cell.textContent = step.dp[i][j];
+                        gridDiv.appendChild(cell);
+                    }
+                }
+
+                container.appendChild(gridDiv);
+
+                if (step.cost !== undefined) {
+                    const costDiv = document.createElement('div');
+                    costDiv.className = 'step';
+                    costDiv.textContent = `Current cost: ${step.cost}`;
+                    container.appendChild(costDiv);
+                }
+            } catch (error) {
+                throw new Error(`Matrix Chain display error: ${error.message}`);
+            }
+        }
+
+        function displayLIS(step, container) {
+            try {
+                if (!step || !step.dp) {
+                    throw new Error('Invalid data format for LIS visualization');
+                }
+
+                const sequenceDiv = document.createElement('div');
+                sequenceDiv.className = 'sequence-display';
+
+                step.dp.forEach((length, index) => {
+                    const numDiv = document.createElement('div');
+                    numDiv.className = 'sequence-item';
+                    if (index === step.i) {
+                        numDiv.classList.add('current');
+                    } else if (index === step.j) {
+                        numDiv.classList.add('computed');
+                    }
+                    numDiv.textContent = length;
+                    sequenceDiv.appendChild(numDiv);
+                });
+
+                container.appendChild(sequenceDiv);
+
+                if (step.sequence) {
+                    const lisDiv = document.createElement('div');
+                    lisDiv.className = 'step';
+                    lisDiv.textContent = `Current LIS: ${step.sequence.join(', ')}`;
+                    container.appendChild(lisDiv);
+                }
+            } catch (error) {
+                throw new Error(`LIS display error: ${error.message}`);
+            }
+        }
+
+        function displayRodCutting(step, container) {
+            try {
+                if (!step || !step.dp) {
+                    throw new Error('Invalid data format for Rod Cutting visualization');
+                }
+
+                const sequenceDiv = document.createElement('div');
+                sequenceDiv.className = 'sequence-display';
+
+                step.dp.forEach((value, index) => {
+                    const numDiv = document.createElement('div');
+                    numDiv.className = 'sequence-item';
+                    if (index === step.length) {
+                        numDiv.classList.add('current');
+                    } else if (index < step.length) {
+                        numDiv.classList.add('computed');
+                    }
+                    numDiv.textContent = value;
+                    sequenceDiv.appendChild(numDiv);
+                });
+
+                container.appendChild(sequenceDiv);
+
+                if (step.current_cut) {
+                    const cutDiv = document.createElement('div');
+                    cutDiv.className = 'step';
+                    cutDiv.textContent = `Best cut at length ${step.length}: ${step.current_cut}`;
+                    container.appendChild(cutDiv);
+                }
+            } catch (error) {
+                throw new Error(`Rod Cutting display error: ${error.message}`);
+            }
+        }
+
+        function reset() {
+            try {
+                state.reset();
+                const container = document.getElementById('visualizationContainer');
+                container.innerHTML = `
+                    <div class="how-it-works">
+                        <h3>How it Works</h3>
+                        <p>{{ algorithm_description | safe }}</p>
+                    </div>
+                `;
+                const inputs = document.querySelectorAll('input');
+                inputs.forEach(input => {
+                    input.value = input.defaultValue || '';
+                });
+            } catch (error) {
+                console.error('Reset error:', error);
+                const container = document.getElementById('visualizationContainer');
+                container.innerHTML = `<div class="error-message">Error resetting: ${error.message}</div>`;
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            try {
+                generateRandom();
+                const inputs = document.querySelectorAll('input');
+                inputs.forEach(input => {
+                    input.addEventListener('keypress', (e) => {
+                        if (e.key === 'Enter') {
+                            visualize();
+                        }
+                    });
+                });
+            } catch (error) {
+                console.error('Initialization error:', error);
+            }
+        });
+    </script>
+</body>
+</html>

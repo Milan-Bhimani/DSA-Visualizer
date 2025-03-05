@@ -1,0 +1,1081 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ algorithm_name }} - Algorithm Visualizer</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        :root {
+            --primary-color: #03A9F4;
+            --primary-dark: #0288D1;
+            --success-color: #4FC3F7;
+            --error-color: #ef5350;
+            --background-color: #F5F5F5;
+            --text-color: #212121;
+            --border-color: #E0E0E0;
+            --border-light: #EEEEEE;
+            --header-bg: #0277BD;
+            --secondary-color: #757575;
+            --secondary-dark: #616161;
+            --accent-color: #29B6F6;
+            --hover-color: #039BE5;
+            --shadow-color: rgba(0, 0, 0, 0.1);
+        }
+
+        .visualization-container {
+            width: 90%;
+            max-width: 1200px;
+            margin: 20px auto;
+        }
+
+        .control-panel {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .controls-wrapper {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+            background-color: var(--background-color);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: inset 0 2px 4px var(--shadow-color);
+        }
+
+        .input-group input, .input-group button {
+            padding: 12px 15px;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 1em;
+            transition: all 0.3s ease;
+            background-color: white;
+            box-shadow: inset 0 1px 3px var(--shadow-color);
+        }
+
+        .input-group button {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .input-group button:hover {
+            background: var(--hover-color);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px var(--shadow-color);
+        }
+
+        .visualization-area {
+            background: white;
+            border-radius: 8px;
+            padding: 25px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            overflow-y: auto;
+            max-height: 800px;
+        }
+
+        .step-container {
+            position: relative;
+            padding-left: 20px;
+            margin-bottom: 15px;
+        }
+
+        .step-container::before {
+            content: '';
+            position: absolute;
+            left: 2px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background-color: var(--primary-color);
+            opacity: 0.3;
+        }
+
+        .step-container:last-child::before {
+            height: 50%;
+        }
+
+        .step-number {
+            position: absolute;
+            left: -10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: var(--primary-color);
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9em;
+            font-weight: bold;
+        }
+
+        .step-content {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px var(--shadow-color);
+            margin-left: 15px;
+        }
+
+        .step-explanation {
+            margin: 15px 0;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: left;
+            font-size: 1.1em;
+            background-color: var(--background-color);
+            box-shadow: 0 2px 4px var(--shadow-color);
+            position: relative;
+            padding-left: 45px;
+        }
+
+        .step-explanation::before {
+            content: '→';
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.5em;
+            color: var(--primary-color);
+        }
+
+        .step-explanation.success {
+            background: linear-gradient(135deg, var(--success-color), var(--primary-color));
+            color: white;
+        }
+
+        .step-explanation.success::before {
+            content: '✓';
+            color: white;
+        }
+
+        .step-explanation.error {
+            background: linear-gradient(135deg, var(--error-color), #e53935);
+            color: white;
+        }
+
+        .step-explanation.error::before {
+            content: '×';
+            color: white;
+        }
+
+        .steps-counter {
+            background: linear-gradient(135deg, var(--header-bg), var(--primary-dark));
+            color: white;
+            padding: 15px 25px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 1.1em;
+            font-weight: 500;
+        }
+
+        .point-controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .canvas-container {
+            background: white;
+            border-radius: 8px;
+            padding: 10px;
+            box-shadow: 0 2px 4px var(--shadow-color);
+            margin-bottom: 15px;
+        }
+
+        canvas {
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            margin: 0 auto;
+            display: block;
+        }
+
+        .info-panel {
+            margin-top: 30px;
+            padding: 25px;
+            background-color: var(--background-color);
+            border-radius: 8px;
+            box-shadow: inset 0 2px 4px var(--shadow-color);
+        }
+
+        .complexity {
+            display: flex;
+            gap: 30px;
+            margin-bottom: 25px;
+            padding: 20px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px var(--shadow-color);
+        }
+
+        .complexity-item {
+            flex: 1;
+        }
+
+        .complexity-item .label {
+            font-weight: 600;
+            color: var(--text-color);
+            margin-right: 10px;
+        }
+
+        .complexity-item .value {
+            color: var(--primary-color);
+            font-family: 'Courier New', monospace;
+        }
+
+        .explanation {
+            padding: 20px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px var(--shadow-color);
+        }
+
+        .explanation h3 {
+            margin-top: 0;
+            color: var(--text-color);
+            font-size: 1.3em;
+        }
+
+        .speed-control {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin: 25px 0;
+            padding: 20px;
+            background-color: var(--background-color);
+            border-radius: 8px;
+            box-shadow: inset 0 2px 4px var(--shadow-color);
+        }
+
+        .speed-control label {
+            font-weight: 600;
+            min-width: 120px;
+        }
+
+        .speed-control input[type="range"] {
+            flex: 1;
+            height: 6px;
+            -webkit-appearance: none;
+            background: var(--border-color);
+            border-radius: 3px;
+            outline: none;
+        }
+
+        .speed-control input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            background: var(--primary-color);
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .speed-control input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.1);
+        }
+
+        #speedLabel {
+            min-width: 80px;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+
+            .header {
+                padding: 15px;
+            }
+
+            .header h1 {
+                font-size: 2em;
+            }
+
+            .controls, 
+            .visualization-area {
+                padding: 15px;
+            }
+
+            .complexity {
+                flex-direction: column;
+                gap: 15px;
+            }
+        }
+
+        .how-it-works-panel {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px var(--shadow-color);
+            margin-bottom: 20px;
+        }
+
+        .how-it-works-panel h3 {
+            color: var(--primary-color);
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+
+        .algorithm-steps {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .algorithm-steps .step {
+            background: var(--background-color);
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .algorithm-steps h4 {
+            color: var(--primary-dark);
+            margin: 0 0 8px 0;
+            font-size: 1.1em;
+        }
+
+        .algorithm-steps p {
+            margin: 0;
+            color: var(--text-color);
+            line-height: 1.5;
+        }
+
+        .complexity-info {
+            margin-top: 20px;
+            padding: 15px;
+            background: var(--background-color);
+            border-radius: 8px;
+            border-left: 4px solid var(--accent-color);
+        }
+
+        .complexity-info p {
+            margin: 5px 0;
+            color: var(--text-color);
+        }
+
+        .complexity-info strong {
+            color: var(--primary-dark);
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <a href="/" class="back-button">← Back to Algorithms</a>
+        <h1>{{ algorithm_name }}</h1>
+        <p class="subtitle">{{ algorithm_description }}</p>
+    </div>
+
+    <div class="visualization-container">
+        <div class="control-panel">
+            <div class="controls-wrapper">
+                <div class="input-group">
+                    {% if algorithm_id == 'divide-conquer/binary-search' %}
+                        <input type="text" id="array" placeholder="Sorted array (e.g., 1,3,5,7,9)">
+                        <input type="number" id="target" placeholder="Target value">
+                        <button onclick="generateRandomArray('sorted')">Random Sorted Array</button>
+                    {% elif algorithm_id == 'divide-conquer/merge-sort' or algorithm_id == 'divide-conquer/quick-sort' %}
+                        <input type="text" id="array" placeholder="Array to sort (e.g., 5,2,8,1,9)">
+                        <button onclick="generateRandomArray('unsorted')">Random Array</button>
+                    {% elif algorithm_id == 'divide-conquer/closest-pair' %}
+                        <div class="how-it-works-panel">
+                            <h3>How the Closest Pair Algorithm Works</h3>
+                            <div class="algorithm-steps">
+                                <div class="step">
+                                    <h4>1. Initial Setup</h4>
+                                    <p>The algorithm starts by sorting all points by their x-coordinates. This helps in dividing the points into left and right halves.</p>
+                                </div>
+                                <div class="step">
+                                    <h4>2. Divide</h4>
+                                    <p>The points are divided into two equal halves using a vertical line. This creates a left set and a right set of points.</p>
+                                </div>
+                                <div class="step">
+                                    <h4>3. Conquer</h4>
+                                    <p>Find the minimum distance recursively in both left and right halves. Let's call this distance δ = min(dl, dr).</p>
+                                </div>
+                                <div class="step">
+                                    <h4>4. Strip Creation</h4>
+                                    <p>Create a strip of width 2δ centered on the dividing line. Only points within this strip can have a distance less than δ.</p>
+                                </div>
+                                <div class="step">
+                                    <h4>5. Strip Processing</h4>
+                                    <p>Compare each point in the strip with only the next 7 points (proof shows we don't need to check more). Update δ if a smaller distance is found.</p>
+                                </div>
+                                <div class="step">
+                                    <h4>6. Final Result</h4>
+                                    <p>Return the minimum of δ and the minimum distance found in the strip. This is guaranteed to be the closest pair distance.</p>
+                                </div>
+                            </div>
+                            <div class="complexity-info">
+                                <p><strong>Time Complexity:</strong> O(n log n) - The algorithm uses divide and conquer with efficient strip processing</p>
+                                <p><strong>Space Complexity:</strong> O(n) - Additional space needed for sorting and strip processing</p>
+                            </div>
+                        </div>
+                        <div class="point-controls">
+                            <button onclick="addPoint()">Add Point</button>
+                            <button onclick="generateRandomPoints()">Random Points</button>
+                            <button onclick="clearPoints()">Clear Points</button>
+                        </div>
+                        <div class="canvas-container">
+                            <canvas id="pointCanvas" width="600" height="400"></canvas>
+                        </div>
+                    {% elif algorithm_id == 'divide-conquer/karatsuba' %}
+                        <input type="number" id="num1" placeholder="First number (e.g., 1234)">
+                        <input type="number" id="num2" placeholder="Second number (e.g., 5678)">
+                        <button onclick="generateRandomNumbers()">Random Numbers</button>
+                    {% elif algorithm_id == 'divide-conquer/strassen' %}
+                        <div class="how-it-works-panel">
+                            <h3>How Strassen's Matrix Multiplication Works</h3>
+                            <div class="algorithm-steps">
+                                <div class="step">
+                                    <h4>1. Base Case</h4>
+                                    <p>For small matrices (2x2), perform direct multiplication as it's more efficient than further subdivision.</p>
+                                </div>
+                                <div class="step">
+                                    <h4>2. Matrix Division</h4>
+                                    <p>Split each input matrix into four equal quarters:</p>
+                                    <pre>
+Matrix A:         Matrix B:
+[A11  A12]       [B11  B12]
+[A21  A22]       [B21  B22]</pre>
+                                </div>
+                                <div class="step">
+                                    <h4>3. Seven Products (Strassen's Innovation)</h4>
+                                    <p>Instead of 8 multiplications in standard matrix multiplication, compute these 7 products:</p>
+                                    <pre>
+P1 = A11 × (B12 - B22)
+P2 = (A11 + A12) × B22
+P3 = (A21 + A22) × B11
+P4 = A22 × (B21 - B11)
+P5 = (A11 + A22) × (B11 + B22)
+P6 = (A12 - A22) × (B21 + B22)
+P7 = (A11 - A21) × (B11 + B12)</pre>
+                                </div>
+                                <div class="step">
+                                    <h4>4. Result Calculation</h4>
+                                    <p>Combine the products to form the result matrix C:</p>
+                                    <pre>
+C11 = P5 + P4 - P2 + P6
+C12 = P1 + P2
+C21 = P3 + P4
+C22 = P5 + P1 - P3 - P7</pre>
+                                </div>
+                            </div>
+                            <div class="complexity-info">
+                                <p><strong>Time Complexity:</strong> O(n^log₂(7)) ≈ O(n^2.807) - Better than standard O(n³)</p>
+                                <p><strong>Space Complexity:</strong> O(n²) - Additional space needed for recursive calls</p>
+                                <p><strong>Key Advantage:</strong> Reduces multiplication operations from 8 to 7, leading to asymptotic improvement</p>
+                                <p><strong>Best Use Case:</strong> Most effective for large matrices where the overhead is justified by the reduced multiplication count</p>
+                            </div>
+                        </div>
+                        <div class="matrix-controls">
+                            <button onclick="setMatrixSize()">Set Matrix Size</button>
+                            <button onclick="generateRandomMatrices()">Random Matrices</button>
+                            <button onclick="clearMatrices()">Clear Matrices</button>
+                        </div>
+                        <div class="matrix-input-container">
+                            <div class="matrix-input" id="matrixA">
+                                <h4>Matrix A</h4>
+                                <div class="matrix-grid"></div>
+                            </div>
+                            <div class="matrix-input" id="matrixB">
+                                <h4>Matrix B</h4>
+                                <div class="matrix-grid"></div>
+                            </div>
+                        </div>
+                    {% endif %}
+                    <button onclick="visualize('{{ algorithm_id }}')" class="primary-button">Visualize</button>
+                    <button onclick="resetVisualization()" class="secondary-button">Reset</button>
+                </div>
+                <div class="speed-control">
+                    <label for="speed">Animation Speed:</label>
+                    <input type="range" id="speed" min="1" max="5" value="3">
+                    <span id="speedLabel">Normal</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="visualization-area">
+            <div class="steps-counter">
+                <span>Current Step: <span id="currentStepNumber">0</span></span>
+                <span>Total Steps: <span id="totalSteps">0</span></span>
+            </div>
+            <div id="visualizationContainer"></div>
+            <div class="info-panel">
+                <div class="complexity">
+                    <div class="complexity-item">
+                        <span class="label">Time Complexity:</span>
+                        <span class="value">{{ time_complexity }}</span>
+                    </div>
+                    <div class="complexity-item">
+                        <span class="label">Space Complexity:</span>
+                        <span class="value">{{ space_complexity }}</span>
+                    </div>
+                </div>
+                <div class="explanation">
+                    <h3>How it works</h3>
+                    <p>{{ algorithm_explanation }}</p>
+                    <div class="step-explanation" id="currentStep"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentAnimation = null;
+        let stepCount = 0;
+        let totalSteps = 0;
+        const speedControl = document.getElementById('speed');
+        const speedLabel = document.getElementById('speedLabel');
+        let points = [];
+        let matrixA = [];
+        let matrixB = [];
+        let matrixSize = 4;
+        let isDrawing = false;
+        
+        // Update speed label
+        speedControl.addEventListener('input', function() {
+            const speeds = ['Very Slow', 'Slow', 'Normal', 'Fast', 'Very Fast'];
+            speedLabel.textContent = speeds[this.value - 1];
+        });
+        
+        function getDelay() {
+            const delays = [1000, 800, 600, 400, 200];
+            return delays[speedControl.value - 1];
+        }
+
+        // Canvas event listeners for closest pair
+        const canvas = document.getElementById('pointCanvas');
+        if (canvas) {
+            canvas.addEventListener('mousedown', startDrawing);
+            canvas.addEventListener('mousemove', draw);
+            canvas.addEventListener('mouseup', stopDrawing);
+            canvas.addEventListener('mouseleave', stopDrawing);
+        }
+
+        function startDrawing(e) {
+            isDrawing = true;
+            addPointAtEvent(e);
+        }
+
+        function draw(e) {
+            if (!isDrawing) return;
+            addPointAtEvent(e);
+        }
+
+        function stopDrawing() {
+            isDrawing = false;
+        }
+
+        function addPointAtEvent(e) {
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            points.push([x, y]);
+            drawPoints();
+        }
+        
+        function generateRandomArray(type) {
+            const size = Math.floor(Math.random() * 8) + 5; // 5 to 12 elements
+            let arr = Array.from({length: size}, () => Math.floor(Math.random() * 100));
+            if (type === 'sorted') {
+                arr.sort((a, b) => a - b);
+            }
+            document.getElementById('array').value = arr.join(',');
+        }
+
+        function generateRandomPoints() {
+            points = [];
+            const numPoints = Math.floor(Math.random() * 6) + 5; // 5 to 10 points
+            for (let i = 0; i < numPoints; i++) {
+                points.push([
+                    Math.floor(Math.random() * (canvas.width - 40) + 20),
+                    Math.floor(Math.random() * (canvas.height - 40) + 20)
+                ]);
+            }
+            drawPoints();
+        }
+
+        function addPoint() {
+            const x = Math.floor(Math.random() * (canvas.width - 40) + 20);
+            const y = Math.floor(Math.random() * (canvas.height - 40) + 20);
+            points.push([x, y]);
+            drawPoints();
+        }
+
+        function drawPoints() {
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw grid
+            ctx.strokeStyle = '#eee';
+            ctx.lineWidth = 0.5;
+            for (let i = 0; i < canvas.width; i += 50) {
+                ctx.beginPath();
+                ctx.moveTo(i, 0);
+                ctx.lineTo(i, canvas.height);
+                ctx.stroke();
+            }
+            for (let i = 0; i < canvas.height; i += 50) {
+                ctx.beginPath();
+                ctx.moveTo(0, i);
+                ctx.lineTo(canvas.width, i);
+                ctx.stroke();
+            }
+
+            // Draw points
+            points.forEach((point, index) => {
+                ctx.beginPath();
+                ctx.arc(point[0], point[1], 5, 0, 2 * Math.PI);
+                ctx.fillStyle = '#4CAF50';
+                ctx.fill();
+                ctx.strokeStyle = '#2E7D32';
+                ctx.stroke();
+                
+                // Draw point labels
+                ctx.fillStyle = '#000';
+                ctx.font = '12px Arial';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'bottom';
+                ctx.fillText(`P${index + 1}`, point[0], point[1] - 8);
+            });
+        }
+        
+        function clearPoints() {
+            points = [];
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+        
+        function displayVisualization(step) {
+            const container = document.getElementById('visualizationContainer');
+            const stepExplanation = document.getElementById('currentStep');
+            
+            // Create step container
+            const stepContainer = document.createElement('div');
+            stepContainer.className = 'step-container';
+            
+            // Add step number
+            const stepNumber = document.createElement('div');
+            stepNumber.className = 'step-number';
+            stepNumber.textContent = stepCount;
+            stepContainer.appendChild(stepNumber);
+            
+            // Add step content
+            const stepContent = document.createElement('div');
+            stepContent.className = 'step-content';
+            
+            const algorithmId = '{{ algorithm_id }}';
+            
+            if (algorithmId === 'divide-conquer/closest-pair') {
+                const canvas = document.createElement('canvas');
+                canvas.width = 600;
+                canvas.height = 400;
+                const ctx = canvas.getContext('2d');
+                
+                // Draw grid
+                ctx.strokeStyle = '#eee';
+                ctx.lineWidth = 0.5;
+                for (let i = 0; i < canvas.width; i += 50) {
+                    ctx.beginPath();
+                    ctx.moveTo(i, 0);
+                    ctx.lineTo(i, canvas.height);
+                    ctx.stroke();
+                }
+                for (let i = 0; i < canvas.height; i += 50) {
+                    ctx.beginPath();
+                    ctx.moveTo(0, i);
+                    ctx.lineTo(canvas.width, i);
+                    ctx.stroke();
+                }
+                
+                // Draw all points
+                step.points.forEach((point, index) => {
+                    ctx.beginPath();
+                    ctx.arc(point[0], point[1], 5, 0, 2 * Math.PI);
+                    ctx.fillStyle = '#4CAF50';
+                    ctx.fill();
+                    ctx.strokeStyle = '#2E7D32';
+                    ctx.stroke();
+                    
+                    // Draw point labels
+                    ctx.fillStyle = '#000';
+                    ctx.font = '12px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'bottom';
+                    ctx.fillText(`P${index + 1}`, point[0], point[1] - 8);
+                });
+                
+                // Draw current comparison
+                if (step.comparing) {
+                    ctx.strokeStyle = '#FF5722';
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.moveTo(step.comparing[0][0], step.comparing[0][1]);
+                    ctx.lineTo(step.comparing[1][0], step.comparing[1][1]);
+                    ctx.stroke();
+                    
+                    // Highlight compared points
+                    step.comparing.forEach(point => {
+                        ctx.beginPath();
+                        ctx.arc(point[0], point[1], 7, 0, 2 * Math.PI);
+                        ctx.strokeStyle = '#FF5722';
+                        ctx.lineWidth = 2;
+                        ctx.stroke();
+                    });
+                    
+                    // Display distance
+                    if (step.distance) {
+                        ctx.fillStyle = '#000';
+                        ctx.font = '14px Arial';
+                        const midX = (step.comparing[0][0] + step.comparing[1][0]) / 2;
+                        const midY = (step.comparing[0][1] + step.comparing[1][1]) / 2;
+                        ctx.fillText(`Distance: ${step.distance.toFixed(2)}`, midX, midY - 10);
+                    }
+                }
+                
+                // Draw dividing line for divide step
+                if (step.divide_x !== undefined) {
+                    ctx.beginPath();
+                    ctx.strokeStyle = '#2196F3';
+                    ctx.lineWidth = 1;
+                    ctx.setLineDash([5, 5]);
+                    ctx.moveTo(step.divide_x, 0);
+                    ctx.lineTo(step.divide_x, canvas.height);
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+                }
+                
+                // Draw strip area if present
+                if (step.strip_x !== undefined && step.strip_width !== undefined) {
+                    ctx.fillStyle = 'rgba(33, 150, 243, 0.1)';
+                    ctx.fillRect(
+                        step.strip_x - step.strip_width / 2,
+                        0,
+                        step.strip_width,
+                        canvas.height
+                    );
+                }
+                
+                stepContent.appendChild(canvas);
+            } else if (algorithmId === 'divide-conquer/binary-search') {
+                displayBinarySearch(step, stepContent);
+            } else if (algorithmId === 'divide-conquer/merge-sort' || algorithmId === 'divide-conquer/quick-sort') {
+                displaySorting(step, stepContent);
+            } else if (algorithmId === 'divide-conquer/karatsuba') {
+                displayKaratsuba(step, stepContent);
+            } else if (algorithmId === 'divide-conquer/strassen') {
+                displayStrassen(step, stepContent);
+            }
+            
+            // Add step explanation
+            if (step.explanation) {
+                const explanation = document.createElement('div');
+                explanation.className = 'step-explanation';
+                if (step.success === true) {
+                    explanation.classList.add('success');
+                } else if (step.success === false) {
+                    explanation.classList.add('error');
+                }
+                explanation.textContent = step.explanation;
+                stepContent.appendChild(explanation);
+            }
+            
+            stepContainer.appendChild(stepContent);
+            container.appendChild(stepContainer);
+            
+            // Scroll to the latest step
+            container.scrollTop = container.scrollHeight;
+        }
+        
+        async function visualize(algorithmId) {
+            if (currentAnimation) {
+                currentAnimation.abort = true;
+            }
+            
+            stepCount = 0;
+            document.getElementById('visualizationContainer').innerHTML = '';
+            
+            const data = {};
+            
+            if (algorithmId === 'divide-conquer/binary-search') {
+                data.array = document.getElementById('array').value.split(',').map(Number);
+                data.target = parseInt(document.getElementById('target').value);
+            }
+            else if (algorithmId === 'divide-conquer/merge-sort' || algorithmId === 'divide-conquer/quick-sort') {
+                data.array = document.getElementById('array').value.split(',').map(Number);
+            }
+            else if (algorithmId === 'divide-conquer/closest-pair') {
+                if (points.length < 2) {
+                    alert('Please add at least 2 points');
+                    return;
+                }
+                data.points = points;
+            }
+            else if (algorithmId === 'divide-conquer/karatsuba') {
+                data.x = parseInt(document.getElementById('num1').value);
+                data.y = parseInt(document.getElementById('num2').value);
+            }
+            else if (algorithmId === 'divide-conquer/strassen') {
+                data.matrix_a = matrixA;
+                data.matrix_b = matrixB;
+            }
+            
+            try {
+                const response = await fetch(`/api/${algorithmId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Visualization failed');
+                }
+                
+                const { steps } = await response.json();
+                currentAnimation = { abort: false };
+                totalSteps = steps.length;
+                document.getElementById('totalSteps').textContent = totalSteps;
+                
+                for (const step of steps) {
+                    if (currentAnimation.abort) break;
+                    stepCount++;
+                    document.getElementById('currentStepNumber').textContent = stepCount;
+                    displayVisualization(step);
+                    await new Promise(resolve => setTimeout(resolve, getDelay()));
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                const container = document.getElementById('visualizationContainer');
+                container.innerHTML = `<div class="error-message">Error: ${error.message}</div>`;
+            }
+        }
+        
+        function resetVisualization() {
+            if (currentAnimation) {
+                currentAnimation.abort = true;
+            }
+            
+            const algorithmId = '{{ algorithm_id }}';
+            if (algorithmId === 'divide-conquer/closest-pair') {
+                clearPoints();
+            } else if (algorithmId === 'divide-conquer/strassen') {
+                clearMatrices();
+            }
+            
+            document.getElementById('visualizationContainer').innerHTML = '';
+            document.getElementById('currentStep').textContent = '';
+            document.getElementById('currentStepNumber').textContent = '0';
+            document.getElementById('totalSteps').textContent = '0';
+            stepCount = 0;
+            totalSteps = 0;
+        }
+
+        function displayBinarySearch(step, stepContent) {
+            const arrayContainer = document.createElement('div');
+            arrayContainer.className = 'array-container';
+            
+            step.array.forEach((num, index) => {
+                const element = document.createElement('div');
+                element.className = 'array-element';
+                element.textContent = num;
+                
+                if (index === step.mid) {
+                    element.classList.add('mid');
+                }
+                if (index === step.left) {
+                    element.classList.add('left');
+                }
+                if (index === step.right) {
+                    element.classList.add('right');
+                }
+                if (index === step.target_index) {
+                    element.classList.add('target');
+                }
+                
+                arrayContainer.appendChild(element);
+            });
+            
+            stepContent.appendChild(arrayContainer);
+        }
+
+        function displaySorting(step, stepContent) {
+            const arrayContainer = document.createElement('div');
+            arrayContainer.className = 'array-container';
+            
+            step.array.forEach((num, index) => {
+                const element = document.createElement('div');
+                element.className = 'array-element';
+                element.textContent = num;
+                
+                if (step.comparing && step.comparing.includes(index)) {
+                    element.classList.add('comparing');
+                }
+                if (step.sorted && step.sorted.includes(index)) {
+                    element.classList.add('sorted');
+                }
+                if (step.pivot_index === index) {
+                    element.classList.add('pivot');
+                }
+                
+                arrayContainer.appendChild(element);
+            });
+            
+            stepContent.appendChild(arrayContainer);
+        }
+
+        function displayKaratsuba(step, stepContent) {
+            const container = document.createElement('div');
+            container.className = 'karatsuba-step';
+            
+            if (step.numbers) {
+                const numbersDiv = document.createElement('div');
+                numbersDiv.className = 'numbers';
+                numbersDiv.innerHTML = `
+                    <div>X = ${step.numbers.x}</div>
+                    <div>Y = ${step.numbers.y}</div>
+                `;
+                container.appendChild(numbersDiv);
+            }
+            
+            if (step.calculation) {
+                const calcDiv = document.createElement('div');
+                calcDiv.className = 'calculation';
+                calcDiv.innerHTML = step.calculation;
+                container.appendChild(calcDiv);
+            }
+            
+            stepContent.appendChild(container);
+        }
+
+        function displayStrassen(step, stepContent) {
+            const container = document.createElement('div');
+            container.className = 'strassen-step';
+            
+            ['A', 'B', 'Result'].forEach(matrixName => {
+                if (step[matrixName.toLowerCase()]) {
+                    const matrixDiv = document.createElement('div');
+                    matrixDiv.className = 'matrix';
+                    matrixDiv.innerHTML = `<h4>Matrix ${matrixName}</h4>`;
+                    
+                    const table = document.createElement('table');
+                    step[matrixName.toLowerCase()].forEach(row => {
+                        const tr = document.createElement('tr');
+                        row.forEach(cell => {
+                            const td = document.createElement('td');
+                            td.textContent = cell;
+                            tr.appendChild(td);
+                        });
+                        table.appendChild(tr);
+                    });
+                    
+                    matrixDiv.appendChild(table);
+                    container.appendChild(matrixDiv);
+                }
+            });
+            
+            stepContent.appendChild(container);
+        }
+
+        function generateRandomNumbers() {
+            const maxDigits = 4;
+            document.getElementById('num1').value = Math.floor(Math.random() * Math.pow(10, maxDigits));
+            document.getElementById('num2').value = Math.floor(Math.random() * Math.pow(10, maxDigits));
+        }
+
+        function setMatrixSize() {
+            const size = prompt('Enter matrix size (must be a power of 2):', '4');
+            if (size) {
+                const n = parseInt(size);
+                if (n && (n & (n - 1)) === 0) { // Check if power of 2
+                    matrixSize = n;
+                    clearMatrices();
+                    initializeMatrices();
+                } else {
+                    alert('Matrix size must be a power of 2');
+                }
+            }
+        }
+
+        function generateRandomMatrices() {
+            matrixA = Array(matrixSize).fill().map(() => 
+                Array(matrixSize).fill().map(() => Math.floor(Math.random() * 10))
+            );
+            matrixB = Array(matrixSize).fill().map(() => 
+                Array(matrixSize).fill().map(() => Math.floor(Math.random() * 10))
+            );
+            displayMatrices();
+        }
+
+        function clearMatrices() {
+            matrixA = Array(matrixSize).fill().map(() => Array(matrixSize).fill(0));
+            matrixB = Array(matrixSize).fill().map(() => Array(matrixSize).fill(0));
+            displayMatrices();
+        }
+
+        function initializeMatrices() {
+            const matrixADiv = document.querySelector('#matrixA .matrix-grid');
+            const matrixBDiv = document.querySelector('#matrixB .matrix-grid');
+            
+            [matrixADiv, matrixBDiv].forEach((div, matrixIndex) => {
+                div.innerHTML = '';
+                div.style.gridTemplate = `repeat(${matrixSize}, 1fr) / repeat(${matrixSize}, 1fr)`;
+                
+                for (let i = 0; i < matrixSize; i++) {
+                    for (let j = 0; j < matrixSize; j++) {
+                        const input = document.createElement('input');
+                        input.type = 'number';
+                        input.value = 0;
+                        input.dataset.row = i;
+                        input.dataset.col = j;
+                        input.addEventListener('change', (e) => {
+                            const matrix = matrixIndex === 0 ? matrixA : matrixB;
+                            matrix[i][j] = parseInt(e.target.value) || 0;
+                        });
+                        div.appendChild(input);
+                    }
+                }
+            });
+        }
+
+        function displayMatrices() {
+            const matrixAInputs = document.querySelectorAll('#matrixA .matrix-grid input');
+            const matrixBInputs = document.querySelectorAll('#matrixB .matrix-grid input');
+            
+            matrixAInputs.forEach(input => {
+                const i = parseInt(input.dataset.row);
+                const j = parseInt(input.dataset.col);
+                input.value = matrixA[i][j];
+            });
+            
+            matrixBInputs.forEach(input => {
+                const i = parseInt(input.dataset.row);
+                const j = parseInt(input.dataset.col);
+                input.value = matrixB[i][j];
+            });
+        }
+    </script>
+</body>
+</html>

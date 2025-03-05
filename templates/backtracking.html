@@ -1,0 +1,1014 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ algorithm_name }} - Algorithm Visualizer</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        .sudoku-grid {
+            border-collapse: collapse;
+            margin: 20px auto;
+            background: white;
+            border: 2px solid var(--border-color);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .sudoku-grid td {
+            width: 50px;
+            height: 50px;
+            text-align: center;
+            font-size: 20px;
+            border: 1px solid var(--border-light);
+            transition: all 0.3s ease;
+        }
+        
+        .sudoku-grid td.border-bottom {
+            border-bottom: 2px solid #000;
+        }
+        
+        .sudoku-grid td.border-right {
+            border-right: 2px solid #000;
+        }
+        
+        .sudoku-grid td.initial {
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        
+        .sudoku-grid td.current {
+            background-color: var(--primary-color);
+        }
+        
+        .sudoku-grid td.current.trying {
+            background-color: var(--success-color);
+        }
+        
+        .sudoku-grid td.current.backtrack {
+            background-color: var(--error-color);
+        }
+        
+        .step-explanation {
+            margin: 15px 0;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: left;
+            font-size: 1.1em;
+            background-color: var(--background-color);
+            box-shadow: 0 2px 4px var(--shadow-color);
+            position: relative;
+            padding-left: 45px;
+        }
+        
+        .step-explanation::before {
+            content: '→';
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.5em;
+            color: var(--primary-color);
+        }
+        
+        .step-explanation.success {
+            background: linear-gradient(135deg, var(--success-color), var(--primary-color));
+            color: white;
+        }
+        
+        .step-explanation.success::before {
+            content: '✓';
+            color: white;
+        }
+        
+        .step-explanation.error {
+            background: linear-gradient(135deg, var(--error-color), #e53935);
+            color: white;
+        }
+        
+        .step-explanation.error::before {
+            content: '×';
+            color: white;
+        }
+
+        .steps-counter {
+            background-color: #34495e;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            margin: 10px 0;
+            font-size: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .visualization-area {
+            background-color: white;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 4px 6px var(--shadow-color);
+        }
+
+        .controls {
+            background-color: white;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px var(--shadow-color);
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+            background-color: var(--background-color);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: inset 0 2px 4px var(--shadow-color);
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 10px;
+            color: var(--text-color);
+            font-weight: 600;
+            font-size: 1.1em;
+        }
+
+        .input-group input, 
+        .input-group textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 1em;
+            transition: all 0.3s ease;
+            background-color: white;
+            box-shadow: inset 0 1px 3px var(--shadow-color);
+        }
+
+        .input-group input:focus, 
+        .input-group textarea:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.2);
+            outline: none;
+        }
+
+        .speed-control {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin: 25px 0;
+            padding: 20px;
+            background-color: var(--background-color);
+            border-radius: 8px;
+            box-shadow: inset 0 2px 4px var(--shadow-color);
+        }
+
+        .speed-control label {
+            font-weight: 600;
+            min-width: 120px;
+        }
+
+        .speed-control input[type="range"] {
+            flex: 1;
+            height: 6px;
+            -webkit-appearance: none;
+            background: var(--border-color);
+            border-radius: 3px;
+            outline: none;
+        }
+
+        .speed-control input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            background: var(--primary-color);
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .speed-control input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.1);
+        }
+
+        #speedLabel {
+            min-width: 80px;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        .button-container {
+            display: flex;
+            gap: 15px;
+            margin-top: 25px;
+        }
+
+        .primary-button,
+        .secondary-button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1em;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            box-shadow: 0 2px 5px var(--shadow-color);
+        }
+
+        .primary-button {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .primary-button:hover,
+        .secondary-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px var(--shadow-color);
+        }
+
+        .primary-button:active,
+        .secondary-button:active {
+            transform: translateY(1px);
+            box-shadow: 0 1px 3px var(--shadow-color);
+        }
+
+        .input-help {
+            font-size: 0.9em;
+            color: var(--secondary-color);
+            margin: 8px 0;
+            padding: 8px;
+            border-left: 3px solid var(--primary-color);
+            background-color: rgba(52, 152, 219, 0.1);
+            border-radius: 0 4px 4px 0;
+        }
+
+        :root {
+            --primary-color: #03A9F4;
+            --primary-dark: #0288D1;
+            --success-color: #4FC3F7;
+            --error-color: #ef5350;
+            --background-color: #F5F5F5;
+            --text-color: #212121;
+            --border-color: #E0E0E0;
+            --border-light: #EEEEEE;
+            --header-bg: #0277BD;
+            --secondary-color: #757575;
+            --secondary-dark: #616161;
+            --accent-color: #29B6F6;
+            --hover-color: #039BE5;
+            --shadow-color: rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: var(--background-color);
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--header-bg), var(--primary-dark));
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            color: white;
+            position: relative;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 2.5em;
+            font-weight: 600;
+        }
+
+        .header .subtitle {
+            margin: 10px 0 0;
+            opacity: 0.9;
+            font-size: 1.1em;
+        }
+
+        .back-button {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: white;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            opacity: 0.8;
+            transition: opacity 0.3s;
+        }
+
+        .back-button:hover {
+            opacity: 1;
+        }
+
+        .visualization-area {
+            background-color: white;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 4px 6px var(--shadow-color);
+        }
+
+        .steps-counter {
+            background: linear-gradient(135deg, var(--header-bg), var(--primary-dark));
+            color: white;
+            padding: 15px 25px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 1.1em;
+            font-weight: 500;
+        }
+
+        .info-panel {
+            margin-top: 30px;
+            padding: 25px;
+            background-color: var(--background-color);
+            border-radius: 8px;
+            box-shadow: inset 0 2px 4px var(--shadow-color);
+        }
+
+        .complexity {
+            display: flex;
+            gap: 30px;
+            margin-bottom: 25px;
+            padding: 20px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px var(--shadow-color);
+        }
+
+        .complexity-item {
+            flex: 1;
+        }
+
+        .complexity-item .label {
+            font-weight: 600;
+            color: var(--text-color);
+            margin-right: 10px;
+        }
+
+        .complexity-item .value {
+            color: var(--primary-color);
+            font-family: 'Courier New', monospace;
+        }
+
+        .explanation {
+            padding: 20px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px var(--shadow-color);
+        }
+
+        .explanation h3 {
+            margin-top: 0;
+            color: var(--text-color);
+            font-size: 1.3em;
+        }
+
+        .step-explanation {
+            margin: 15px 0;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 1.1em;
+            background-color: var(--background-color);
+        }
+
+        .step-explanation.success {
+            background: linear-gradient(135deg, var(--success-color), var(--primary-color));
+            color: white;
+        }
+
+        .step-explanation.error {
+            background: linear-gradient(135deg, var(--error-color), #ef5350);
+            color: white;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+
+            .header {
+                padding: 15px;
+            }
+
+            .header h1 {
+                font-size: 2em;
+            }
+
+            .controls, 
+            .visualization-area {
+                padding: 15px;
+            }
+
+            .button-container {
+                flex-direction: column;
+            }
+
+            .complexity {
+                flex-direction: column;
+                gap: 15px;
+            }
+        }
+
+        #visualizationContainer {
+            margin: 20px 0;
+            padding: 20px;
+            background-color: var(--background-color);
+            border-radius: 8px;
+            box-shadow: inset 0 2px 4px var(--shadow-color);
+            min-height: 300px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .step-number {
+            position: absolute;
+            left: -10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: var(--primary-color);
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9em;
+            font-weight: bold;
+        }
+
+        .step-container {
+            position: relative;
+            padding-left: 20px;
+            margin-bottom: 15px;
+        }
+
+        .step-container::before {
+            content: '';
+            position: absolute;
+            left: 2px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background-color: var(--primary-color);
+            opacity: 0.3;
+        }
+
+        .step-container:last-child::before {
+            height: 50%;
+        }
+
+        .step-content {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px var(--shadow-color);
+            margin-left: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <a href="/" class="back-button">← Back to Algorithms</a>
+            <h1>{{ algorithm_name }}</h1>
+            <p class="subtitle">{{ algorithm_description }}</p>
+        </div>
+        
+        <div class="controls">
+            {% if algorithm_id == 'backtracking/n-queens' %}
+                <div class="input-group">
+                    <label for="boardSize">Board Size:</label>
+                    <input type="number" id="boardSize" min="4" max="12" value="8">
+                </div>
+            {% elif algorithm_id == 'backtracking/sudoku' %}
+                <div class="input-group">
+                    <label for="sudokuInput">Sudoku Grid (Use 0 or . for empty cells):</label>
+                    <textarea id="sudokuInput" placeholder="5 3 0 0 7 0 0 0 0
+6 0 0 1 9 5 0 0 0
+0 9 8 0 0 0 0 6 0
+8 0 0 0 6 0 0 0 3
+4 0 0 8 0 3 0 0 1
+7 0 0 0 2 0 0 0 6
+0 6 0 0 0 0 2 8 0
+0 0 0 4 1 9 0 0 5
+0 0 0 0 8 0 0 7 9"></textarea>
+                </div>
+            {% elif algorithm_id == 'backtracking/subset-sum' %}
+                <div class="input-group">
+                    <label for="numbers">Numbers (comma-separated):</label>
+                    <input type="text" id="numbers" placeholder="2, 4, 6, 8, 10">
+                    <label for="target">Target Sum:</label>
+                    <input type="number" id="target" placeholder="14">
+                </div>
+            {% elif algorithm_id == 'backtracking/permutations' %}
+                <div class="input-group">
+                    <label for="array">Array Elements (comma-separated):</label>
+                    <input type="text" id="array" placeholder="1, 2, 3">
+                </div>
+            {% elif algorithm_id == 'backtracking/graph-coloring' %}
+                <div class="input-group">
+                    <label for="graphInput">Graph Edges (one edge per line, format: A-B):</label>
+                    <textarea id="graphInput" placeholder="A-B
+B-C
+C-D
+D-A
+B-D"></textarea>
+                    <div class="input-help">
+                        Enter each edge on a new line using the format: vertex-vertex (e.g., A-B)
+                    </div>
+                    <label for="colors">Number of Colors:</label>
+                    <input type="number" id="colors" min="2" max="10" value="4">
+                </div>
+            {% endif %}
+
+            <div class="speed-control">
+                <label for="speed">Animation Speed:</label>
+                <input type="range" id="speed" min="1" max="5" value="3">
+                <span id="speedLabel">Normal</span>
+            </div>
+            
+            <div class="button-container">
+                <button onclick="visualize()" class="primary-button">Visualize</button>
+                <button onclick="reset()" class="secondary-button">Reset</button>
+                <button onclick="generateRandom()" class="secondary-button">Random Input</button>
+            </div>
+        </div>
+        
+        <div class="visualization-area">
+            <div class="steps-counter">
+                <span>Current Step: <span id="currentStepNumber">0</span></span>
+                <span>Total Steps: <span id="totalSteps">0</span></span>
+            </div>
+            <div id="visualizationContainer"></div>
+            <div class="info-panel">
+                <div class="complexity">
+                    <div class="complexity-item">
+                        <span class="label">Time Complexity:</span>
+                        <span class="value">{{ time_complexity }}</span>
+                    </div>
+                    <div class="complexity-item">
+                        <span class="label">Space Complexity:</span>
+                        <span class="value">{{ space_complexity }}</span>
+                    </div>
+                </div>
+                <div class="explanation">
+                    <h3>How it works</h3>
+                    <p>{{ algorithm_description }}</p>
+                    <div class="step-explanation" id="currentStep"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentAnimation = null;
+        let stepCount = 0;
+        let totalSteps = 0;
+        const speedControl = document.getElementById('speed');
+        const speedLabel = document.getElementById('speedLabel');
+        
+        // Update speed label
+        speedControl.addEventListener('input', function() {
+            const speeds = ['Very Slow', 'Slow', 'Normal', 'Fast', 'Very Fast'];
+            speedLabel.textContent = speeds[this.value - 1];
+        });
+        
+        function getDelay() {
+            const delays = [1000, 800, 600, 400, 200];
+            return delays[speedControl.value - 1];
+        }
+
+        function generateRandomSudoku() {
+            // Generate a valid partially filled Sudoku grid
+            const grid = Array(9).fill().map(() => Array(9).fill(0));
+            const nums = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+            
+            // Fill diagonal 3x3 boxes (which are independent)
+            for (let box = 0; box < 3; box++) {
+                const shuffled = nums.sort(() => Math.random() - 0.5);
+                for (let i = 0; i < 3; i++) {
+                    for (let j = 0; j < 3; j++) {
+                        grid[box * 3 + i][box * 3 + j] = shuffled[i * 3 + j];
+                    }
+                }
+            }
+            
+            // Remove some numbers randomly
+            for (let i = 0; i < 9; i++) {
+                for (let j = 0; j < 9; j++) {
+                    if (Math.random() > 0.3) { // Keep about 30% of numbers
+                        grid[i][j] = 0;
+                    }
+                }
+            }
+            
+            document.getElementById('sudokuInput').value = grid.map(row => row.join(' ')).join('\n');
+        }
+
+        function generateRandom() {
+            const algorithmId = '{{ algorithm_id }}';
+            
+            if (algorithmId === 'backtracking/sudoku') {
+                generateRandomSudoku();
+            }
+            else if (algorithmId === 'backtracking/n-queens') {
+                document.getElementById('boardSize').value = Math.floor(Math.random() * 5) + 4; // 4-8
+            }
+            else if (algorithmId === 'backtracking/subset-sum') {
+                const size = Math.floor(Math.random() * 6) + 5; // 5-10 numbers
+                const numbers = Array(size).fill().map(() => Math.floor(Math.random() * 20) + 1);
+                document.getElementById('numbers').value = numbers.join(', ');
+                document.getElementById('target').value = Math.floor(Math.random() * 50) + 10;
+            }
+            else if (algorithmId === 'backtracking/permutations') {
+                const size = Math.floor(Math.random() * 3) + 3; // 3-5 elements
+                const array = Array(size).fill().map((_, i) => i + 1);
+                document.getElementById('array').value = array.join(', ');
+            }
+            else if (algorithmId === 'backtracking/graph-coloring') {
+                const vertices = ['A', 'B', 'C', 'D', 'E'];
+                const edges = [];
+                // Generate random edges
+                vertices.forEach(v => {
+                    const numEdges = Math.floor(Math.random() * 3) + 1; // 1-3 edges per vertex
+                    const otherVertices = vertices.filter(u => u !== v);
+                    const connections = otherVertices
+                        .sort(() => Math.random() - 0.5)
+                        .slice(0, numEdges);
+                    
+                    connections.forEach(u => {
+                        if (!edges.includes(`${u}-${v}`) && !edges.includes(`${v}-${u}`)) {
+                            edges.push(`${v}-${u}`);
+                        }
+                    });
+                });
+                document.getElementById('graphInput').value = edges.join('\n');
+                document.getElementById('colors').value = Math.floor(Math.random() * 3) + 3; // 3-5 colors
+            }
+        }
+
+        async function visualize() {
+            if (currentAnimation) {
+                currentAnimation.abort = true;
+            }
+
+            stepCount = 0;
+            const algorithmId = '{{ algorithm_id }}';
+            const data = {};
+
+            try {
+                if (algorithmId === 'backtracking/n-queens') {
+                    data.board_size = parseInt(document.getElementById('boardSize').value);
+                }
+                else if (algorithmId === 'backtracking/sudoku') {
+                    const input = document.getElementById('sudokuInput').value;
+                    data.board = input.trim().split('\n').map(line => 
+                        line.trim().split(/[\s,]+/).map(n => n === '.' || n === '0' ? 0 : parseInt(n))
+                    );
+                }
+                else if (algorithmId === 'backtracking/subset-sum') {
+                    data.numbers = document.getElementById('numbers').value.split(',').map(n => parseInt(n.trim()));
+                    data.target = parseInt(document.getElementById('target').value);
+                }
+                else if (algorithmId === 'backtracking/permutations') {
+                    data.array = document.getElementById('array').value.split(',').map(n => n.trim());
+                }
+                else if (algorithmId === 'backtracking/graph-coloring') {
+                    const edges = document.getElementById('graphInput').value
+                        .trim()
+                        .split('\n')
+                        .map(line => line.trim())
+                        .filter(line => line && line.includes('-'));
+                    
+                    // Convert edge list to adjacency list format
+                    const graph = {};
+                    edges.forEach(edge => {
+                        const [v1, v2] = edge.split('-');
+                        if (!graph[v1]) graph[v1] = [];
+                        if (!graph[v2]) graph[v2] = [];
+                        if (!graph[v1].includes(v2)) graph[v1].push(v2);
+                        if (!graph[v2].includes(v1)) graph[v2].push(v1);
+                    });
+                    
+                    data.graph = graph;
+                    data.colors = parseInt(document.getElementById('colors').value);
+                }
+
+                const response = await fetch(`/api/${algorithmId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                if (!response.ok) {
+                    throw new Error('Visualization failed');
+                }
+
+                const { steps } = await response.json();
+                currentAnimation = { abort: false };
+                totalSteps = steps.length;
+                document.getElementById('totalSteps').textContent = totalSteps;
+
+                for (const step of steps) {
+                    if (currentAnimation.abort) break;
+                    stepCount++;
+                    document.getElementById('currentStepNumber').textContent = stepCount;
+                    displayVisualization(step);
+                    await new Promise(resolve => setTimeout(resolve, getDelay()));
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('visualizationContainer').innerHTML = 
+                    `<div class="error-message">Error: ${error.message}</div>`;
+            }
+        }
+
+        function displayVisualization(step) {
+            const container = document.getElementById('visualizationContainer');
+            const stepExplanation = document.getElementById('currentStep');
+            
+            // Create step container
+            const stepContainer = document.createElement('div');
+            stepContainer.className = 'step-container';
+            
+            // Add step number
+            const stepNumber = document.createElement('div');
+            stepNumber.className = 'step-number';
+            stepNumber.textContent = stepCount;
+            stepContainer.appendChild(stepNumber);
+            
+            // Add step content
+            const stepContent = document.createElement('div');
+            stepContent.className = 'step-content';
+            
+            if (step.explanation) {
+                const explanation = document.createElement('div');
+                explanation.className = 'step-explanation';
+                explanation.textContent = step.explanation;
+                if (step.success === true) {
+                    explanation.classList.add('success');
+                } else if (step.success === false) {
+                    explanation.classList.add('error');
+                }
+                stepContent.appendChild(explanation);
+            }
+            
+            // Add visualization based on algorithm type
+            const algorithmId = '{{ algorithm_id }}';
+            if (algorithmId === 'backtracking/n-queens') {
+                displayNQueens(step, stepContent);
+            }
+            else if (algorithmId === 'backtracking/sudoku') {
+                displaySudoku(step, stepContent);
+            }
+            else if (algorithmId === 'backtracking/subset-sum') {
+                displaySubsetSum(step, stepContent);
+            }
+            else if (algorithmId === 'backtracking/permutations') {
+                displayPermutations(step, stepContent);
+            }
+            else if (algorithmId === 'backtracking/graph-coloring') {
+                displayGraphColoring(step, stepContent);
+            }
+            
+            stepContainer.appendChild(stepContent);
+            container.appendChild(stepContainer);
+            
+            // Scroll to the latest step
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function displayNQueens(step, container) {
+            const table = document.createElement('table');
+            step.board.forEach((row, i) => {
+                const tr = document.createElement('tr');
+                row.forEach((cell, j) => {
+                    const td = document.createElement('td');
+                    td.style.backgroundColor = ((i + j) % 2 === 0) ? '#fff' : '#f0f0f0';
+                    if (cell === 1) {
+                        td.textContent = '♛';
+                        td.style.color = '#2ecc71';
+                    }
+                    if (step.current && step.current.row === i && step.current.col === j) {
+                        td.style.backgroundColor = '#3498db';
+                    }
+                    tr.appendChild(td);
+                });
+                table.appendChild(tr);
+            });
+            container.appendChild(table);
+        }
+
+        function displaySudoku(step, container) {
+            const table = document.createElement('table');
+            table.className = 'sudoku-grid';
+            
+            step.board.forEach((row, i) => {
+                const tr = document.createElement('tr');
+                row.forEach((cell, j) => {
+                    const td = document.createElement('td');
+                    td.textContent = cell || '';
+                    
+                    // Style for initial numbers
+                    if (step.explanation === 'Initial board state' && cell !== 0) {
+                        td.classList.add('initial');
+                    }
+                    
+                    // Style for current cell being tried
+                    if (step.current && step.current.row === i && step.current.col === j) {
+                        td.classList.add('current');
+                        if (step.value !== undefined) {
+                            td.classList.add(step.value === 0 ? 'backtrack' : 'trying');
+                        }
+                    }
+                    
+                    // Style for borders
+                    if ((i + 1) % 3 === 0) td.classList.add('border-bottom');
+                    if ((j + 1) % 3 === 0) td.classList.add('border-right');
+                    
+                    tr.appendChild(td);
+                });
+                table.appendChild(tr);
+            });
+            
+            // Add step explanation with better formatting
+            const explanationDiv = document.createElement('div');
+            explanationDiv.className = 'step-explanation';
+            explanationDiv.textContent = step.explanation;
+            if (step.success === true) {
+                explanationDiv.classList.add('success');
+            } else if (step.success === false) {
+                explanationDiv.classList.add('error');
+            }
+            
+            container.appendChild(table);
+            container.appendChild(explanationDiv);
+        }
+
+        function displaySubsetSum(step, container) {
+            const div = document.createElement('div');
+            div.className = 'subset-sum';
+            
+            const numbersDiv = document.createElement('div');
+            numbersDiv.className = 'numbers';
+            step.numbers.forEach((num, i) => {
+                const span = document.createElement('span');
+                span.textContent = num;
+                if (step.current_subset && step.current_subset.includes(i)) {
+                    span.className = 'selected';
+                }
+                numbersDiv.appendChild(span);
+            });
+            
+            const sumDiv = document.createElement('div');
+            sumDiv.className = 'current-sum';
+            sumDiv.textContent = `Current Sum: ${step.current_sum}`;
+            
+            div.appendChild(numbersDiv);
+            div.appendChild(sumDiv);
+            container.appendChild(div);
+        }
+
+        function displayPermutations(step, container) {
+            const div = document.createElement('div');
+            div.className = 'permutations';
+            
+            if (step.current_permutation) {
+                const currentDiv = document.createElement('div');
+                currentDiv.className = 'current-permutation';
+                currentDiv.textContent = `Current: [${step.current_permutation.join(', ')}]`;
+                div.appendChild(currentDiv);
+            }
+            
+            if (step.all_permutations) {
+                const allDiv = document.createElement('div');
+                allDiv.className = 'all-permutations';
+                step.all_permutations.forEach(perm => {
+                    const permDiv = document.createElement('div');
+                    permDiv.textContent = `[${perm.join(', ')}]`;
+                    allDiv.appendChild(permDiv);
+                });
+                div.appendChild(allDiv);
+            }
+            
+            container.appendChild(div);
+        }
+
+        function displayGraphColoring(step, container) {
+            const canvas = document.createElement('canvas');
+            canvas.width = 600;
+            canvas.height = 400;
+            const ctx = canvas.getContext('2d');
+            
+            const colors = [
+                '#ef5350', // red
+                '#42A5F5', // blue
+                '#66BB6A', // green
+                '#FFA726', // orange
+                '#AB47BC', // purple
+                '#26A69A', // teal
+                '#EC407A', // pink
+                '#5C6BC0', // indigo
+                '#8D6E63', // brown
+                '#03A9F4'  // light blue
+            ];
+            
+            const vertices = Object.keys(step.graph);
+            const positions = {};
+            const radius = 20;
+            
+            // Calculate vertex positions in a circle
+            vertices.forEach((v, i) => {
+                const angle = (i * 2 * Math.PI) / vertices.length;
+                positions[v] = {
+                    x: 300 + 150 * Math.cos(angle),
+                    y: 200 + 150 * Math.sin(angle)
+                };
+            });
+            
+            // Draw edges
+            ctx.strokeStyle = '#95a5a6';
+            ctx.lineWidth = 2;
+            vertices.forEach(v => {
+                step.graph[v].forEach(u => {
+                    ctx.beginPath();
+                    ctx.moveTo(positions[v].x, positions[v].y);
+                    ctx.lineTo(positions[u].x, positions[u].y);
+                    ctx.stroke();
+                });
+            });
+            
+            // Draw vertices
+            vertices.forEach(v => {
+                ctx.beginPath();
+                ctx.arc(positions[v].x, positions[v].y, radius, 0, 2 * Math.PI);
+                ctx.fillStyle = step.colors[v] !== undefined ? colors[step.colors[v]] : '#fff';
+                ctx.fill();
+                ctx.stroke();
+                
+                ctx.fillStyle = '#000';
+                ctx.font = '16px Arial';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(v, positions[v].x, positions[v].y);
+            });
+            
+            container.appendChild(canvas);
+        }
+
+        function reset() {
+            if (currentAnimation) {
+                currentAnimation.abort = true;
+            }
+            
+            document.getElementById('visualizationContainer').innerHTML = '';
+            document.getElementById('currentStep').textContent = '';
+            document.getElementById('currentStepNumber').textContent = '0';
+            document.getElementById('totalSteps').textContent = '0';
+            stepCount = 0;
+            totalSteps = 0;
+            
+            const algorithmId = '{{ algorithm_id }}';
+            if (algorithmId === 'backtracking/n-queens') {
+                document.getElementById('boardSize').value = '8';
+            }
+            else if (algorithmId === 'backtracking/sudoku') {
+                document.getElementById('sudokuInput').value = '';
+            }
+            else if (algorithmId === 'backtracking/subset-sum') {
+                document.getElementById('numbers').value = '';
+                document.getElementById('target').value = '';
+            }
+            else if (algorithmId === 'backtracking/permutations') {
+                document.getElementById('array').value = '';
+            }
+            else if (algorithmId === 'backtracking/graph-coloring') {
+                document.getElementById('graphInput').value = '';
+                document.getElementById('colors').value = '4';
+            }
+        }
+
+        // Initialize with random input
+        generateRandom();
+    </script>
+</body>
+</html>

@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Algorithm Visualizer</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="header">
+        <h1>Algorithm Visualizer</h1>
+        <p class="subtitle">Interactive visualization of common algorithms</p>
+    </div>
+
+    <div class="categories-container">
+        <!-- Sorting Section -->
+        <div class="category">
+            <h2>Sorting Algorithms</h2>
+            <div class="algorithm-grid">
+                <a href="/sorting/bubble" class="algorithm-card">
+                    <h3>Bubble Sort</h3>
+                    <p>Simple comparison-based sorting</p>
+                </a>
+                <a href="/sorting/insertion" class="algorithm-card">
+                    <h3>Insertion Sort</h3>
+                    <p>Build sorted array one item at a time</p>
+                </a>
+                <a href="/sorting/selection" class="algorithm-card">
+                    <h3>Selection Sort</h3>
+                    <p>Find minimum element and place in sorted portion</p>
+                </a>
+                <a href="/sorting/merge" class="algorithm-card">
+                    <h3>Merge Sort</h3>
+                    <p>Divide and conquer sorting algorithm</p>
+                </a>
+                <a href="/sorting/quick" class="algorithm-card">
+                    <h3>Quick Sort</h3>
+                    <p>Partition-based sorting algorithm</p>
+                </a>
+                <a href="/sorting/heap" class="algorithm-card">
+                    <h3>Heap Sort</h3>
+                    <p>Binary heap based sorting</p>
+                </a>
+            </div>
+        </div>
+
+        <!-- Searching Section -->
+        <div class="category">
+            <h2>Searching Algorithms</h2>
+            <div class="algorithm-grid">
+                <a href="/searching/linear" class="algorithm-card">
+                    <h3>Linear Search</h3>
+                    <p>Sequential search through array</p>
+                </a>
+                <a href="/searching/binary" class="algorithm-card">
+                    <h3>Binary Search</h3>
+                    <p>Search in sorted array by dividing search interval</p>
+                </a>
+                <a href="/searching/jump" class="algorithm-card">
+                    <h3>Jump Search</h3>
+                    <p>Skip fixed steps in sorted array</p>
+                </a>
+                <a href="/searching/exponential" class="algorithm-card">
+                    <h3>Exponential Search</h3>
+                    <p>Find range then binary search</p>
+                </a>
+                <a href="/searching/interpolation" class="algorithm-card">
+                    <h3>Interpolation Search</h3>
+                    <p>Improved binary search for uniform distribution</p>
+                </a>
+            </div>
+        </div>
+
+        <!-- Dynamic Programming Section -->
+        <div class="category">
+            <h2>Dynamic Programming</h2>
+            <div class="algorithm-grid">
+                <a href="/dp/fibonacci" class="algorithm-card">
+                    <h3>Fibonacci</h3>
+                    <p>Calculate nth Fibonacci number</p>
+                </a>
+                <a href="/dp/lcs" class="algorithm-card">
+                    <h3>Longest Common Subsequence</h3>
+                    <p>Find longest common subsequence</p>
+                </a>
+                <a href="/dp/knapsack" class="algorithm-card">
+                    <h3>0/1 Knapsack</h3>
+                    <p>Maximize value with weight constraint</p>
+                </a>
+                <a href="/dp/edit_distance" class="algorithm-card">
+                    <h3>Edit Distance</h3>
+                    <p>Minimum operations to transform string</p>
+                </a>
+                <a href="/dp/matrix_chain" class="algorithm-card">
+                    <h3>Matrix Chain Multiplication</h3>
+                    <p>Optimize matrix multiplication order</p>
+                </a>
+                <a href="/dp/lis" class="algorithm-card">
+                    <h3>Longest Increasing Subsequence</h3>
+                    <p>Find longest increasing subsequence</p>
+                </a>
+            </div>
+        </div>
+
+        <!-- Graph Algorithms Section -->
+        <div class="category">
+            <h2>Graph Algorithms</h2>
+            <div class="algorithm-grid">
+                <a href="/graph/dfs" class="algorithm-card">
+                    <h3>Depth-First Search</h3>
+                    <p>Explore graph branches before backtracking</p>
+                </a>
+                <a href="/graph/bfs" class="algorithm-card">
+                    <h3>Breadth-First Search</h3>
+                    <p>Explore graph level by level</p>
+                </a>
+                <a href="/graph/dijkstra" class="algorithm-card">
+                    <h3>Dijkstra's Algorithm</h3>
+                    <p>Find shortest paths in weighted graph</p>
+                </a>
+                <a href="/graph/prim" class="algorithm-card">
+                    <h3>Prim's Algorithm</h3>
+                    <p>Find minimum spanning tree</p>
+                </a>
+                <a href="/graph/kruskal" class="algorithm-card">
+                    <h3>Kruskal's Algorithm</h3>
+                    <p>Find minimum spanning tree</p>
+                </a>
+                <a href="/graph/bellman-ford" class="algorithm-card">
+                    <h3>Bellman-Ford Algorithm</h3>
+                    <p>Find shortest paths with negative edges</p>
+                </a>
+                <a href="/graph/floyd-warshall" class="algorithm-card">
+                    <h3>Floyd-Warshall Algorithm</h3>
+                    <p>Find all pairs shortest paths</p>
+                </a>
+            </div>
+        </div>
+
+        <!-- Greedy Algorithms Section -->
+        <div class="category">
+            <h2>Greedy Algorithms</h2>
+            <div class="algorithm-grid">
+                <a href="/greedy/activity" class="algorithm-card">
+                    <h3>Activity Selection</h3>
+                    <p>Select maximum non-overlapping activities</p>
+                </a>
+                <a href="/greedy/fractional-knapsack" class="algorithm-card">
+                    <h3>Fractional Knapsack</h3>
+                    <p>Maximize value with fractional items</p>
+                </a>
+                <a href="/greedy/huffman" class="algorithm-card">
+                    <h3>Huffman Coding</h3>
+                    <p>Optimal prefix codes for compression</p>
+                </a>
+                <a href="/greedy/coin-change" class="algorithm-card">
+                    <h3>Coin Change</h3>
+                    <p>Minimum coins for given amount</p>
+                </a>
+                <a href="/greedy/job-scheduling" class="algorithm-card">
+                    <h3>Job Scheduling</h3>
+                    <p>Schedule jobs to maximize profit</p>
+                </a>
+                <a href="/greedy/platforms" class="algorithm-card">
+                    <h3>Minimum Platforms</h3>
+                    <p>Minimum platforms for railway station</p>
+                </a>
+            </div>
+        </div>
+
+        <!-- Backtracking Section -->
+        <div class="category">
+            <h2>Backtracking Algorithms</h2>
+            <div class="algorithm-grid">
+                <a href="/backtracking/n-queens" class="algorithm-card">
+                    <h3>N-Queens Problem</h3>
+                    <p>Place N queens on NxN chessboard</p>
+                </a>
+                <a href="/backtracking/sudoku" class="algorithm-card">
+                    <h3>Sudoku Solver</h3>
+                    <p>Solve 9x9 Sudoku puzzle</p>
+                </a>
+                <a href="/backtracking/subset-sum" class="algorithm-card">
+                    <h3>Subset Sum</h3>
+                    <p>Find subset with given sum</p>
+                </a>
+                <a href="/backtracking/permutations" class="algorithm-card">
+                    <h3>Permutations</h3>
+                    <p>Generate all permutations</p>
+                </a>
+                <a href="/backtracking/graph-coloring" class="algorithm-card">
+                    <h3>Graph Coloring</h3>
+                    <p>Color vertices with minimum colors</p>
+                </a>
+            </div>
+        </div>
+
+        <!-- Divide and Conquer Section -->
+        <div class="category">
+            <h2>Divide and Conquer Algorithms</h2>
+            <div class="algorithm-grid">
+                <a href="/divide-conquer/binary-search" class="algorithm-card">
+                    <h3>Binary Search</h3>
+                    <p>Search in sorted array by dividing</p>
+                </a>
+                <a href="/divide-conquer/merge-sort" class="algorithm-card">
+                    <h3>Merge Sort</h3>
+                    <p>Sort by dividing and merging</p>
+                </a>
+                <a href="/divide-conquer/quick-sort" class="algorithm-card">
+                    <h3>Quick Sort</h3>
+                    <p>Sort by partitioning around pivot</p>
+                </a>
+                <a href="/divide-conquer/closest-pair" class="algorithm-card">
+                    <h3>Closest Pair of Points</h3>
+                    <p>Find closest points in 2D space</p>
+                </a>
+                <a href="/divide-conquer/karatsuba" class="algorithm-card">
+                    <h3>Karatsuba Multiplication</h3>
+                    <p>Fast multiplication of large numbers</p>
+                </a>
+                <a href="/divide-conquer/strassen" class="algorithm-card">
+                    <h3>Strassen's Matrix Multiplication</h3>
+                    <p>Efficient matrix multiplication</p>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>
