@@ -607,4 +607,4 @@ def api_divide_conquer(algorithm):
     return 'Algorithm not found', 404
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True,port=8000)
