@@ -285,7 +285,7 @@ input[type="range"] {
     display: flex;
     align-items: center;
     justify-content: center;
-    color: var(--primary-dark);
+    color: white;
     font-size: 0.9em;
     transition: all 0.3s;
 }
@@ -477,7 +477,21 @@ input[type="range"] {
             <div id="visualizationContainer">
                 <div class="how-it-works">
                     <h3>How it Works</h3>
-                    <p>{{ algorithm_description | safe }}</p>
+                    {% if algorithm_id == 'dp/fibonacci' %}
+                        <p>The Fibonacci sequence is a series of numbers where each number is the sum of the two preceding ones. This algorithm uses dynamic programming to store the results of subproblems to avoid redundant calculations.</p>
+                    {% elif algorithm_id == 'dp/lcs' %}
+                        <p>The Longest Common Subsequence (LCS) problem is to find the longest subsequence common to two sequences. This algorithm uses a 2D table to store the lengths of LCS of substrings and builds the solution in a bottom-up manner.</p>
+                    {% elif algorithm_id == 'dp/knapsack' %}
+                        <p>The Knapsack problem involves selecting items with given weights and values to maximize the total value without exceeding the capacity. This algorithm uses a 2D table to store the maximum value that can be obtained with a given capacity and items.</p>
+                    {% elif algorithm_id == 'dp/edit_distance' %}
+                        <p>The Edit Distance problem measures the minimum number of operations required to convert one string into another. This algorithm uses a 2D table to store the minimum edit distances between substrings and builds the solution in a bottom-up manner.</p>
+                    {% elif algorithm_id == 'dp/matrix_chain' %}
+                        <p>The Matrix Chain Multiplication problem involves finding the most efficient way to multiply a given sequence of matrices. This algorithm uses a 2D table to store the minimum number of scalar multiplications needed to compute the product of matrices.</p>
+                    {% elif algorithm_id == 'dp/lis' %}
+                        <p>The Longest Increasing Subsequence (LIS) problem is to find the longest subsequence of a given sequence where the elements are in sorted order. This algorithm uses dynamic programming to store the lengths of LIS ending at each element.</p>
+                    {% elif algorithm_id == 'dp/rod-cutting' %}
+                        <p>The Rod Cutting problem involves cutting a rod into pieces to maximize the total value. This algorithm uses dynamic programming to store the maximum value obtainable for each length of the rod.</p>
+                    {% endif %}
                 </div>
             </div>
         </div>
@@ -662,7 +676,11 @@ input[type="range"] {
                     throw new Error('Invalid response format from server');
                 }
 
-                state.steps = result.steps;
+                state.steps = result.steps.map(step => ({
+                    ...step,
+                    description: step.description || '',
+                    explanation: step.explanation || ''
+                }));
                 setupVisualization(container);
                 showStep();
 
@@ -771,7 +789,7 @@ input[type="range"] {
 
                 stepCounter.textContent = `Step ${state.currentStep + 1} of ${state.steps.length}`;
                 stepDisplay.innerHTML = '';
-                explanationDisplay.textContent = step.explanation || 'Processing step...';
+                explanationDisplay.textContent = step.explanation || '';
 
                 const displayFunctions = {
                     'dp/fibonacci': displayFibonacci,
